@@ -1,0 +1,9 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE IF NOT EXISTS forms (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    embedding vector(768) NOT NULL
+);

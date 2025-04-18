@@ -1,0 +1,31 @@
+2025-04-08 19:34:38,200 - INFO - Use pytorch device_name: cpu
+2025-04-08 19:34:38,200 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-08 19:34:43,006 - WARNING - Xet Storage is enabled for this repo, but the 'hf_xet' package is not installed. Falling back to regular HTTP download. For better performance, install the package with: `pip install huggingface_hub[hf_xet]` or `pip install hf_xet`
+2025-04-08 19:35:11,481 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\MonHoc\DoAn\DoAnCoSo\BIEUMAU
+2025-04-08 19:37:07,480 - INFO - Use pytorch device_name: cpu
+2025-04-08 19:37:07,480 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-08 19:37:10,798 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\MonHoc\DoAn\DoAnCoSo\BIEUMAU
+2025-04-08 19:38:50,829 - INFO - Use pytorch device_name: cpu
+2025-04-08 19:38:50,829 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-08 19:38:54,181 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\MonHoc\DoAn\DoAnCoSo\BIEUMAU
+2025-04-08 19:39:10,558 - INFO - Use pytorch device_name: cpu
+2025-04-08 19:39:10,558 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-08 19:39:15,075 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\MonHoc\DoAn\DoAnCoSo\BIEUMAU
+2025-04-08 19:39:22,861 - INFO - Use pytorch device_name: cpu
+2025-04-08 19:39:22,861 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-08 19:39:26,668 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\MonHoc\DoAn\DoAnCoSo\BIEUMAU
+2025-04-14 09:17:11,960 - INFO - Use pytorch device_name: cpu
+2025-04-14 09:17:11,960 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-14 09:17:15,420 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\MonHoc\DoAn\DoAnCoSo\BIEUMAU
+2025-04-18 21:04:26,443 - INFO - Use pytorch device_name: cpu
+2025-04-18 21:04:26,443 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-18 21:04:29,918 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\MonHoc\DoAn\DoAnCoSo\BIEUMAU
+2025-04-18 21:04:37,111 - INFO - Use pytorch device_name: cpu
+2025-04-18 21:04:37,111 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-18 21:04:41,681 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\MonHoc\DoAn\DoAnCoSo\BIEUMAU
+2025-04-18 21:10:46,499 - INFO - Use pytorch device_name: cpu
+2025-04-18 21:10:46,499 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-18 21:10:50,881 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\semantic-search-project\Form
+2025-04-18 21:18:00,948 - INFO - Use pytorch device_name: cpu
+2025-04-18 21:18:00,948 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-18 21:18:07,892 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\semantic_search_project\Form
