@@ -58,11 +58,11 @@ const uploadForm = async (req, res) => {
     const vector = JSON.stringify(embed.data.embedding);
 
     const result = await pool.query(
-      'INSERT INTO forms (title, file_path, embedding) VALUES ($1, $2, $3::vector) RETURNING *',
-      [title, filePath, vector]
+      'INSERT INTO forms (title, file_path, content, embedding) VALUES ($1, $2, $3, $4::vector) RETURNING *',
+      [title, filePath, truncated, vector]
     );
+    
 
-    // Xóa file sau khi upload thành công
     fs.unlink(filePath, (err) => {
       if (err) console.warn('Could not delete uploaded file:', err.message);
     });
@@ -77,11 +77,9 @@ const uploadForm = async (req, res) => {
 // Get all forms
 const getForms = async (req, res) => {
   try {
-    console.log("GET /api/forms hit"); 
     const result = await pool.query('SELECT * FROM forms ORDER BY created_at DESC');
     res.json(result.rows);
   } catch (err) {
-    console.error('getForms error:', err);
     res.status(500).json({ error: 'Failed to fetch forms' });
   }
 };
@@ -99,7 +97,6 @@ const getEmbedding = async (req, res) => {
 
     res.json({ embedding: result.data.embedding });
   } catch (err) {
-    console.error('Embedding error:', err);
     res.status(500).json({ error: 'Failed to get embedding', details: err.message });
   }
 };
@@ -110,22 +107,51 @@ const searchForms = async (req, res) => {
     const { query } = req.query;
     if (!query) return res.status(400).json({ error: 'Missing query' });
 
-    const result = await axios.post(EMBEDDING_API, { text: query });
-    if (!result.data || !Array.isArray(result.data.embedding)) {
-      return res.status(500).json({ error: 'Invalid embedding response' });
-    }
+    const embeddingResponse = await axios.post(EMBEDDING_API, { text: query });
+    const vector = '[' + embeddingResponse.data.embedding.join(',') + ']';
 
-    const embedding = JSON.stringify(result.data.embedding);
+    const SIMILARITY_THRESHOLD = 0.72;
 
-    const dbRes = await pool.query(
-      'SELECT title, file_path FROM forms ORDER BY embedding <=> $1::vector LIMIT 5',
-      [embedding]
+    const result = await pool.query(
+      `
+      SELECT title, file_path , content , 1 - (embedding <=> $1::vector) AS similarity
+      FROM forms
+      ORDER BY similarity DESC
+      LIMIT 10
+      `,
+      [vector]
     );
-
-    res.json({ query, results: dbRes.rows });
+    
+    
+    // Lọc kết quả bằng từ khóa (ví dụ: "thôi học") để chắc chắn hơn
+    const keyword = query.toLowerCase();
+    const filtered = result.rows.filter(row =>
+      row.content && row.content.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    if (filtered.length === 0) {
+      return res.status(200).json({
+        query,
+        message: "Không tìm thấy biểu mẫu phù hợp."
+      });
+    }
+    
+    return res.status(200).json({
+      query,
+      totalMatches: filtered.length,
+      results: filtered.map(row => ({
+        title: row.title,
+        file_path: row.file_path,
+        similarity: parseFloat(row.similarity).toFixed(4)
+      }))
+    });
+    
   } catch (err) {
-    console.error('Search error:', err);
-    res.status(500).json({ error: 'Search failed', details: err.message });
+    console.error('❌ Error in searchForms:', err);
+    return res.status(500).json({
+      error: 'Search failed',
+      details: err.message
+    });
   }
 };
 

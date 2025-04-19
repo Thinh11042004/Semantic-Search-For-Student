@@ -7,3 +7,7 @@ CREATE TABLE IF NOT EXISTS forms (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     embedding vector(768) NOT NULL
 );
+
+SELECT * FROM forms;
+
+ALTER TABLE forms ADD COLUMN content TEXT;
