@@ -7,7 +7,7 @@ const pdf = require('pdf-parse');   //Trích xuất văn bản pdf
 const xlsx = require('xlsx');       //Trích xuất văn bản excel
 
 const MAX_TEXT_LENGTH = 5000;   //Giới hạn độ dài văn bản upload
-const EMBEDDING_API = 'http://localhost:5000/get-embedding'; //Địa chỉ FastAPI
+const EMBEDDING_API = 'http://localhost:8000/get-embedding'; //Địa chỉ FastAPI
 
 // Hàm trích xuất nội dung từ file
 const extractTextFromFile = async (filePath) => {

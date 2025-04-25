@@ -8,6 +8,14 @@ CREATE TABLE IF NOT EXISTS forms (
     embedding vector(768) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('admin', 'user', 'guest'))
+);
+
+
 SELECT * FROM forms;
 
 ALTER TABLE forms ADD COLUMN content TEXT;

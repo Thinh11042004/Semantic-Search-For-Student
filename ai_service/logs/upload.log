@@ -50,3 +50,12 @@
 2025-04-19 20:07:33,766 - INFO - Use pytorch device_name: cpu
 2025-04-19 20:07:33,766 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
 2025-04-19 20:07:37,863 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\semantic_search_project\Form
+2025-04-21 22:50:56,574 - INFO - Use pytorch device_name: cpu
+2025-04-21 22:50:56,575 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-21 22:51:01,857 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\semantic_search_project\Form
+2025-04-21 22:59:52,589 - INFO - Use pytorch device_name: cpu
+2025-04-21 22:59:52,589 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-21 22:59:57,791 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\semantic_search_project\Form
+2025-04-24 08:45:06,823 - INFO - Use pytorch device_name: cpu
+2025-04-24 08:45:06,823 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-04-24 08:45:12,239 - INFO - \U0001f4c2 \u0110ang load bi\u1ec3u m\u1eabu t\u1eeb th\u01b0 m\u1ee5c m\u1eb7c \u0111\u1ecbnh: D:\semantic_search_project\Form
