@@ -1,0 +1,193 @@
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+
+const features = [
+  {
+    title: "Document Search",
+    description: "Search through Word, PDF, and text documents with advanced semantic understanding.",
+    icon: (
+      <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="4" y="4" width="16" height="16" rx="4" strokeWidth="2" />
+        <path d="M8 8h8M8 12h4" strokeWidth="2" />
+      </svg>
+    ),
+  },
+  {
+    title: "Spreadsheet Analysis",
+    description: "Extract insights from Excel and CSV files with intelligent data processing.",
+    icon: (
+      <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="14" rx="3" strokeWidth="2" />
+        <path d="M8 10h8M8 14h8" strokeWidth="2" />
+      </svg>
+    ),
+  },
+  {
+    title: "Presentation Search",
+    description: "Find content within PowerPoint presentations and other slide formats.",
+    icon: (
+      <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="4" y="4" width="16" height="16" rx="4" strokeWidth="2" />
+        <path d="M8 8h8v8H8z" strokeWidth="2" />
+      </svg>
+    ),
+  },
+];
+
+// File type icons
+const WordIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#4285F4" />
+    <path d="M14 2v6h6" fill="#AECBFA" />
+    <path d="M16 13H8v-2h8v2zm0 4H8v-2h8v2z" fill="#ffffff" />
+  </svg>
+);
+
+const PDFIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
+    <path d="M20 2H8a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2z" fill="#FF5722" />
+    <path d="M4 6v14a2 2 0 002 2h14" stroke="#FF5722" strokeWidth="2" />
+    <path d="M10.5 11.5h-.8v2.4h.8c.8 0 1.3-.5 1.3-1.2s-.5-1.2-1.3-1.2zM14.7 11.5h1.4v.9h-1.4v.8h1.6v.9h-2.5v-3.8h2.6v.9h-1.7v.3z" fill="#ffffff" />
+    <path d="M10.5 10.6c1.2 0 2.2.7 2.2 2.1 0 1.4-.9 2.1-2.2 2.1h-1.7v-4.2h1.7zM9.7 14.8h.8c1.2 0 2.2-.7 2.2-2.1 0-1.4-1-2.1-2.2-2.1h-1.7v4.2h.9z" fill="#ffffff" />
+    <path d="M9 9h2.3c1.5 0 2.7 1 2.7 2.9 0 1.9-1.2 2.9-2.7 2.9H9V9z" fill="#ffffff" />
+  </svg>
+);
+
+const ExcelIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
+    <path d="M4 3h13l4 4v14a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z" fill="#21A366" />
+    <path d="M17 3v4h4" fill="#107C41" />
+    <rect x="7" y="9" width="10" height="2" fill="#ffffff" />
+    <rect x="7" y="13" width="10" height="2" fill="#ffffff" />
+    <rect x="7" y="17" width="10" height="2" fill="#ffffff" />
+  </svg>
+);
+
+const PowerPointIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
+    <path d="M4 3h13l4 4v14a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z" fill="#D24726" />
+    <path d="M17 3v4h4" fill="#A53005" />
+    <circle cx="12" cy="14" r="3" fill="#ffffff" />
+    <path d="M10 11h3.5a1.5 1.5 0 010 3H10v-3z" fill="#ffffff" />
+  </svg>
+);
+
+const MarkdownIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
+    <path d="M3 3h18a2 2 0 012 2v14a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2z" fill="#7E57C2" />
+    <path d="M5 7v10h3V9.5l2 2.5 2-2.5V17h3V7H12l-2 2.5L8 7H5z" fill="#ffffff" />
+  </svg>
+);
+
+const TextIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#607D8B" />
+    <path d="M14 2v6h6" fill="#B0BEC5" />
+    <path d="M8 12h8M8 16h8M8 8h2" fill="none" stroke="#ffffff" strokeWidth="1.5" />
+  </svg>
+);
+
+export default function SearchForms() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  return (
+    <div className="flex flex-col items-center bg-[#fafbfc] text-gray-900">
+      {/* Header */}
+      <div className="w-full flex flex-col items-center pt-12 pb-4">
+        <h1 className="text-4xl font-bold mb-2 text-center">Intelligent Document Search & Analysis</h1>
+        <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl">
+          Transform the way you search through documents with our advanced semantic search technology.
+        </p>
+        {/* Search Bar */}
+        <div className="w-full max-w-xl flex items-center bg-white rounded-full shadow-lg px-6 py-3 mb-12 border border-gray-100">
+          <input
+            type="text"
+            placeholder="Search across all your documents..."
+            className="flex-1 bg-transparent outline-none text-lg placeholder-gray-400"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+          <button className="ml-2 bg-[#1976d2] hover:bg-[#1565c0] transition-colors text-white rounded-full p-2 shadow-md">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" strokeWidth="2" />
+              <path d="M21 21l-4.35-4.35" strokeWidth="2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Features Grid */}
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 pb-20 px-4">
+        {features.map((feature, idx) => (
+          <div
+            key={feature.title}
+            className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-8 flex flex-col items-start"
+          >
+            <div className="bg-purple-100 rounded-xl p-3 mb-4 flex items-center justify-center">
+              {feature.icon}
+            </div>
+            <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+            <p className="text-gray-600">{feature.description}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Supported File Types Section */}
+      <div className="w-full bg-white py-16">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-3">Supported File Types</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              We support a wide range of document formats to meet your needs
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 justify-items-center">
+            <div className="flex flex-col items-center">
+              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+                <WordIcon />
+              </div>
+              <span className="text-gray-700 font-medium">Word</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+                <PDFIcon />
+              </div>
+              <span className="text-gray-700 font-medium">PDF</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+                <ExcelIcon />
+              </div>
+              <span className="text-gray-700 font-medium">Excel</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+                <PowerPointIcon />
+              </div>
+              <span className="text-gray-700 font-medium">PowerPoint</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+                <MarkdownIcon />
+              </div>
+              <span className="text-gray-700 font-medium">Markdown</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+                <TextIcon />
+              </div>
+              <span className="text-gray-700 font-medium">Text</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+} 
