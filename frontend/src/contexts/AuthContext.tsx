@@ -14,6 +14,7 @@ interface AuthContextType {
   user: UserInfo | null;
   login: (email: string, password: string) => void;
   logout: () => void;
+  register: (email: string, password: string, fullName: string) => Promise<void>;
 }
 
 export const AuthContext = React.createContext<AuthContextType | null>(null);
@@ -36,6 +37,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     // Store authentication token in localStorage
     localStorage.setItem('isAuthenticated', 'true');
+  };
+
+  const register = async (email: string, password: string, fullName: string): Promise<void> => {
+    // TODO: Implement actual registration logic here
+    // For now, just simulate a successful registration
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 1000);
+    });
   };
 
   const logout = () => {
@@ -62,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
