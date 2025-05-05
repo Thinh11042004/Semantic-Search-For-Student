@@ -165,7 +165,7 @@ const Register: FC = () => {
                 value={formData.fullName}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`mt-1 block w-full px-3 py-2 border ${
+                className={`bg-white mt-1 block w-full px-3 py-2 border ${
                   errors.fullName ? 'border-red-500' : 'border-gray-300'
                 } rounded-md shadow-sm focus:outline-none focus:ring-[#1976d2] focus:border-[#1976d2] disabled:opacity-50`}
               />
@@ -186,7 +186,7 @@ const Register: FC = () => {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`mt-1 block w-full px-3 py-2 border ${
+                className={`bg-white mt-1 block w-full px-3 py-2 border ${
                   errors.email ? 'border-red-500' : 'border-gray-300'
                 } rounded-md shadow-sm focus:outline-none focus:ring-[#1976d2] focus:border-[#1976d2] disabled:opacity-50`}
               />
@@ -207,7 +207,7 @@ const Register: FC = () => {
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`mt-1 block w-full px-3 py-2 border ${
+                className={`bg-white mt-1 block w-full px-3 py-2 border ${
                   errors.password ? 'border-red-500' : 'border-gray-300'
                 } rounded-md shadow-sm focus:outline-none focus:ring-[#1976d2] focus:border-[#1976d2] disabled:opacity-50`}
               />
@@ -228,7 +228,7 @@ const Register: FC = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`mt-1 block w-full px-3 py-2 border ${
+                className={`bg-white mt-1 block w-full px-3 py-2 border ${
                   errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                 } rounded-md shadow-sm focus:outline-none focus:ring-[#1976d2] focus:border-[#1976d2] disabled:opacity-50`}
               />

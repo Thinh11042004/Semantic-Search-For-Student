@@ -41,16 +41,30 @@ const Login: FC = () => {
     setError('');
 
     try {
-      await login(email, password);
-      // After successful login, navigate to search form page
-      navigate('/search');
+      const response = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        await login(email, password);
+        navigate('/product', { state: { user: data.user } });
+      } else {
+        setError(data.message || 'Email hoặc mật khẩu không đúng');
+      }
+
     } catch (error) {
-      console.error('Login failed:', error);
-      setError('Email hoặc mật khẩu không đúng');
+      console.error('Lỗi đăng nhập:', error);
+      setError('Lỗi server. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }
-  };
+};
 
   return (
     <div className="min-h-screen bg-[#fafbfc] text-gray-900 flex flex-col">
@@ -87,7 +101,7 @@ const Login: FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1976d2] focus:border-[#1976d2] disabled:opacity-50"
+                className="bg-white mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1976d2] focus:border-[#1976d2] disabled:opacity-50"
               />
             </div>
 
@@ -102,7 +116,7 @@ const Login: FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1976d2] focus:border-[#1976d2] disabled:opacity-50"
+                className="bg-white mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1976d2] focus:border-[#1976d2] disabled:opacity-50"
               />
             </div>
 

@@ -54,13 +54,31 @@ const ExeIcon = () => (
   </svg>
 );
 
+const fileTypes = [
+  { name: "WordPress", icon: <WordPressIcon /> },
+  { name: "Excel", icon: <ExcelIcon /> },
+  { name: "Document", icon: <DocumentIcon /> },
+  { name: "PDF", icon: <PDFIcon /> },
+  { name: "PowerPoint", icon: <PowerPointIcon /> },
+  { name: "Exe", icon: <ExeIcon /> }
+];
+
 const Product: React.FC = () => {
-  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setSelectedFile(event.target.files[0]);
+    if (event.target.files) {
+      const filesArray = Array.from(event.target.files);
+      setSelectedFiles(prev => [...prev, ...filesArray]);
+    }
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (event.dataTransfer.files) {
+      const filesArray = Array.from(event.dataTransfer.files);
+      setSelectedFiles(prev => [...prev, ...filesArray]);
     }
   };
 
@@ -68,25 +86,43 @@ const Product: React.FC = () => {
     event.preventDefault();
   };
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-      setSelectedFile(event.dataTransfer.files[0]);
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUploadAll = async () => {
+    if (selectedFiles.length === 0) {
+      alert("Vui lòng chọn ít nhất một file");
+      return;
+    }
+
+    const formData = new FormData();
+    selectedFiles.forEach(file => formData.append('form', file));
+    
+    
+
+    try {
+      const response = await fetch('http://localhost:5000/api/upload', {
+        method: 'POST',
+        body: formData,
+        
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Upload thành công!");
+        setSelectedFiles([]);
+      } else {
+        alert("Upload thất bại: " + (data.error || "Lỗi không xác định"));
+      }
+    } catch (error) {
+      console.error("Lỗi khi upload:", error);
+      alert("Lỗi kết nối server");
     }
   };
 
-  const fileTypes = [
-    { name: "WordPress", icon: <WordPressIcon /> },
-    { name: "Excel", icon: <ExcelIcon /> },
-    { name: "Document", icon: <DocumentIcon /> },
-    { name: "PDF", icon: <PDFIcon /> },
-    { name: "PowerPoint", icon: <PowerPointIcon /> },
-    { name: "Exe", icon: <ExeIcon /> }
-  ];
-
   return (
     <div className="flex flex-col items-center bg-[#fafbfc] text-gray-900">
-      {/* Header */}
       <div className="w-full flex flex-col items-center pt-12 pb-4">
         <h1 className="text-4xl font-bold mb-2 text-center">Upload & Process Your Files</h1>
         <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl">
@@ -94,55 +130,71 @@ const Product: React.FC = () => {
         </p>
       </div>
 
-      {/* Upload Section */}
-      <div className="w-full max-w-2xl mx-auto mb-12">
-        <div
-          className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center bg-white shadow-md hover:shadow-lg transition-shadow"
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          <div className="mb-4">
-            <svg className="mx-auto w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-          </div>
-          <p className="text-xl font-medium mb-4">Drag and drop a file here or</p>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            id="file-upload"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-[#1976d2] text-white px-8 py-3 rounded hover:bg-[#1565c0] transition-colors font-medium"
-          >
-            Choose File
-          </button>
-          {selectedFile && (
-            <p className="mt-4 text-gray-700">Selected: {selectedFile.name}</p>
-          )}
-        </div>
-      </div>
+      <div
+        className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-white shadow-md hover:shadow-lg transition-shadow flex flex-col gap-4 items-center w-full max-w-2xl"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
 
-      {/* File Type Grid */}
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 pb-20 px-4">
-        {fileTypes.map((fileType) => (
-          <div
-            key={fileType.name}
-            className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-8 flex flex-col items-start"
-          >
-            <div className="bg-purple-100 rounded-xl p-3 mb-4 flex items-center justify-center">
-              {fileType.icon}
-            </div>
-            <h3 className="text-xl font-semibold mb-2">{fileType.name}</h3>
-            <p className="text-gray-600">Process and analyze your {fileType.name} files with our intelligent tools.</p>
+        {/* Danh sách file */}
+        {selectedFiles.length > 0 && (
+          <div className="w-full max-h-48 overflow-y-auto flex flex-col gap-2">
+            {selectedFiles.map((file, index) => (
+              <div key={index} className="flex justify-between bg-gray-100 px-4 py-2 rounded">
+                <span className="truncate">{file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
+                <button
+                  onClick={() => removeFile(index)}
+                  className="bg-black text-red-400 text-sm rounded px-2"
+                >
+                  Xóa
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )}
+
+        {/* Nếu chưa có file, hiển thị icon và text */}
+        {selectedFiles.length === 0 && (
+          <>
+            <div>
+              <svg className="mx-auto w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            <p className="text-xl font-medium mb-4">Drag and drop your files here or</p>
+          </>
+        )}
+
+      {selectedFiles.length > 0 && (
+        <button
+          onClick={handleUploadAll}
+          className="mt-4 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+        >
+          Upload tất cả
+        </button>
+      )}
+
+
+        {/* Input ẩn và nút chọn file */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          id="file-upload"
+          multiple
+        />
+
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="bg-[#1976d2] text-white px-8 py-3 rounded hover:bg-[#1565c0] transition-colors font-medium"
+        >
+          Choose Files
+        </button>
+      
+      </div>  
     </div>
   );
 };
 
-export default Product; 
+export default Product;

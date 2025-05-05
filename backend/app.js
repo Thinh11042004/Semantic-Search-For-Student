@@ -1,7 +1,10 @@
-// semantic-search-backend/app.js
+
 const express = require('express');
 const cors = require('cors');
 const formRoutes = require('./routes/formRoutes');
+const userRoutes = require('./routes/userRoutes');
+const userController = require('./controllers/userController');
+
 require('dotenv').config();
 
 const app = express();
@@ -14,12 +17,14 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static('uploads'));
 
 // Routes
-app.use('/api/forms', formRoutes);
+app.use('/api', formRoutes);
+app.use('/api/users', userRoutes);
 
+// Kiểm tra server
 app.get('/', (req, res) => {
-  res.send('Semantic Search Backend is running!');
+    res.send('Server is running!');
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
