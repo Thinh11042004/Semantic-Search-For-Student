@@ -3,7 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const { getForms, getEmbedding } = require('../controllers/getFormController');
+const { getForms,getEmbedding, getFormsByPage } = require('../controllers/getFormController');
 const { uploadForm } = require('../controllers/uploadController');
 const { searchForms } = require('../controllers/searchFormController');
 
@@ -40,7 +40,7 @@ const upload = multer({
 
 // Routes
 router.post('/upload', upload.array('form'), uploadForm);
-router.get('/forms', getForms);
+router.get('/forms/page', getFormsByPage);
 router.post('/get-embedding', getEmbedding);
 router.get('/search', searchForms);
 

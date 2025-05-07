@@ -65,7 +65,9 @@ const Navbar: React.FC = () => {
                 
                 {user && (
                   <div className="ml-3 bg-blue-500 text-white rounded-lg px-3 py-1 font-medium shadow-md transition transform hover:scale-105 duration-300">
-                    {user.name.split(' ').map(n => n[0]).join('')}
+              {(user && user.name) ? user.name.split(' ').map(n => n[0]).join('') : "?"}
+
+
                   </div>
                 )}
               </>

@@ -136,14 +136,14 @@ const Register: FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] text-gray-900 flex flex-col">
+    <div className="min-h-screen bg-[#fafbfc] text-black flex flex-col">
       <div className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+        <div className="max-w-md w-full bg-[#d9dcde] rounded-xl shadow-lg p-8">
           <div className="text-center mb-6">
-            <div className="text-3xl font-bold text-[#1a237e] mb-2">HUTECH Search</div>
+            <div className="text-3xl font-bold text-[#1a4e7e] mb-2">HUTECH Search</div>
             <div className="w-16 h-1 bg-[#1976d2] mx-auto mb-6"></div>
-            <h2 className="text-2xl font-bold text-gray-900">Đăng ký tài khoản</h2>
-            <p className="mt-2 text-gray-600">Đăng ký để trải nghiệm dịch vụ tìm kiếm thông minh</p>
+            <h2 className="text-2xl font-bold ">Đăng ký tài khoản</h2>
+            <p className="mt-2 ">Đăng ký để trải nghiệm dịch vụ tìm kiếm thông minh</p>
           </div>
 
           {errors.submit && (
@@ -154,7 +154,7 @@ const Register: FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="fullName" className="block text-sm font-medium ">
                 Họ và tên
               </label>
               <input
@@ -175,7 +175,7 @@ const Register: FC = () => {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium ">
                 Email
               </label>
               <input
@@ -196,7 +196,7 @@ const Register: FC = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium ">
                 Mật khẩu
               </label>
               <input
@@ -217,7 +217,7 @@ const Register: FC = () => {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium ">
                 Xác nhận mật khẩu
               </label>
               <input
@@ -246,7 +246,7 @@ const Register: FC = () => {
                 disabled={isLoading}
                 className="h-4 w-4 text-[#1976d2] focus:ring-[#1976d2] border-gray-300 rounded disabled:opacity-50"
               />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="terms" className="ml-2 block text-sm ">
                 Tôi đồng ý với{' '}
                 <Link to="/terms" className="text-[#1976d2] hover:text-[#1565c0]">
                   Điều khoản dịch vụ
@@ -271,7 +271,7 @@ const Register: FC = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Đã có tài khoản?{' '}
-              <Link to="/login" className="font-medium text-[#1976d2] hover:text-[#1565c0]">
+              <Link to="/login" className="font-medium text-[#1976d2] hover:text-[#1565c0] underline">
                 Đăng nhập
               </Link>
             </p>

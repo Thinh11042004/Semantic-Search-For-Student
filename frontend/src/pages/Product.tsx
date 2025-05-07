@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "../components/ui/card";
-import Navbar from "../components/Navbar";
 
 const fileTypes = [
   { name: "WordPress", icon: "https://img.icons8.com/ios-filled/50/wordpress.png" },
@@ -82,7 +81,6 @@ export default function Product() {
 
   return (
     <div className="min-h-screen bg-pink-50 text-gray-800">
-      <Navbar />
       <main className="flex flex-col items-center px-4 py-12">
         <h1 className="text-3xl font-bold mb-4">Upload & Process Your Files</h1>
         <p className="text-gray-600 mb-4">
@@ -127,7 +125,7 @@ export default function Product() {
                 <span>{file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
                 <button 
                   onClick={() => removeFile(file.name)} 
-                  className="text-red-600 hover:underline"
+                  className="bg-[#C0C0C0] text-red-500 text-sm rounded px-2"
                 >
                   Xóa
                 </button>

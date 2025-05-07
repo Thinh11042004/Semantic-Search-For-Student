@@ -1,6 +1,11 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import React, { useEffect, useState } from "react";
+
+
+interface Form {
+  id: number;
+  title: string;
+}
+
 
 const features = [
   {
@@ -91,7 +96,23 @@ const TextIcon = () => (
 export default function SearchForms() {
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [forms, setForms] = useState<Form[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+useEffect(() => {
+fetch(`http://localhost:5000/api/forms/page?page=${page}&limit=8`)
+.then((res) => res.json())
+.then((data) => {
+  setForms(data.forms);
+  setTotalPages(data.totalPages);
+})
+.catch((err) => console.error("Error loading forms:", err));
+}, [page]);
+
   return (
+
+
     <div className="flex flex-col items-center bg-[#fafbfc] text-gray-900">
       {/* Header */}
       <div className="w-full flex flex-col items-center pt-12 pb-4">
@@ -116,6 +137,64 @@ export default function SearchForms() {
           </button>
         </div>
       </div>
+
+      
+      <div className="w-full max-w-5xl px-4 mb-16">
+  {forms.length === 0 ? (
+    <p className="text-center text-gray-500">Chưa có biểu mẫu nào.</p>
+  ) : (
+    <div className="flex flex-col gap-4">
+      {forms.map((form) => {
+        let icon;
+        const lowerTitle = form.title.toLowerCase();
+        if (lowerTitle.endsWith(".doc") || lowerTitle.endsWith(".docx")) {
+          icon = <WordIcon />;
+        } else if (lowerTitle.endsWith(".pdf")) {
+          icon = <PDFIcon />;
+        } else if (lowerTitle.endsWith(".xls") || lowerTitle.endsWith(".xlsx") || lowerTitle.endsWith(".csv")) {
+          icon = <ExcelIcon />;
+        } else {
+          icon = <TextIcon />;
+        }
+
+        return (
+          <div key={form.id} className="flex gap-4 items-center bg-gray-200 rounded-lg p-4 shadow hover:shadow-md transition-shadow">
+            <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-lg">
+              {icon}
+            </div>
+            <div className="flex flex-col">
+              <span className="font-semibold text-lg">{form.title}</span>
+              <span className="text-sm text-gray-500">Biểu mẫu sinh viên</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+
+  {/* Pagination */}
+  <div className="flex justify-center items-center gap-4 mt-6">
+    <button
+      onClick={() => setPage((p) => Math.max(p - 1, 1))}
+      disabled={page === 1}
+    className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-80"
+    >
+      Trang trước
+    </button>
+    <span>
+      Trang {page} / {totalPages}
+    </span>
+    <button
+      onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+      disabled={page === totalPages}
+      className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-80"
+    >
+      Trang sau
+    </button>
+  </div>
+</div>
+
+
 
       {/* Features Grid */}
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 pb-20 px-4">
@@ -190,4 +269,6 @@ export default function SearchForms() {
       </div>
     </div>
   );
+
+
 } 

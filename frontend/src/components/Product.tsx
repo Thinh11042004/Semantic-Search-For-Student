@@ -131,7 +131,12 @@ const Product: React.FC = () => {
       </div>
 
       <div
-        className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-white shadow-md hover:shadow-lg transition-shadow flex flex-col gap-4 items-center w-full max-w-2xl"
+    className={`w-full max-w-2x1 min-h-[12rem] max-h-[30rem]
+      border-2 border-dashed rounded-lg 
+      p-8 text-center bg-white 
+      shadow-md hover:shadow-lg transition-shadow 
+      flex flex-col gap-4 items-center justify-center 
+      `}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
@@ -144,7 +149,7 @@ const Product: React.FC = () => {
                 <span className="truncate">{file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
                 <button
                   onClick={() => removeFile(index)}
-                  className="bg-black text-red-400 text-sm rounded px-2"
+                  className="bg-[#C0C0C0] text-red-500 text-sm rounded px-2"
                 >
                   Xóa
                 </button>

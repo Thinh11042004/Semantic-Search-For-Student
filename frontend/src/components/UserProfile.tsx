@@ -13,35 +13,41 @@ const UserProfile: React.FC = () => {
     memberSince: ""
   });
 
-  // Update formData when user data changes
+  // Khi user thay đổi hoặc lần đầu mount
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || "",
-        email: user.email || "",
-        company: user.company || "",
-        role: user.role || "",
-        plan: user.plan || "",
-        memberSince: user.memberSince || ""
-      });
+    if (user && user.id) {
+      fetch(`http://localhost:5000/api/users/${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          console.log("Data từ backend:", data);
+          setFormData({
+            name: data.name || "",
+            email: data.email || "",
+            company: data.company || "Chưa cập nhật",
+            role: data.role || "",
+            plan: "Basic",
+            memberSince: data.created_at ? new Date(data.created_at).toLocaleDateString() : ""
+          });
+        })
+        .catch(err => {
+          console.error("Lỗi khi lấy user:", err);
+        });
     }
   }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would update the user profile in the backend
+    // TODO: gửi dữ liệu cập nhật lên backend nếu muốn
     setIsEditing(false);
   };
 
-  if (!user) {
+  // Nếu chưa có user (chưa đăng nhập) hoặc chưa load xong
+  if (!user || !user.id) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <p>Loading user information...</p>
@@ -51,18 +57,18 @@ const UserProfile: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="max-w-4xl mx-auto bg-white text-gray-800 rounded-lg shadow-md overflow-hidden">
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
           <h1 className="text-3xl font-bold text-white">User Profile</h1>
         </div>
-        
+
         <div className="p-6">
           <div className="flex items-start">
             <div className="w-1/3 pr-8">
               <div className="bg-gray-100 p-4 rounded-lg mb-4">
                 <div className="w-32 h-32 mx-auto bg-gray-300 rounded-full flex items-center justify-center mb-4">
                   <span className="text-4xl text-gray-600">
-                    {formData.name.split(' ').map(n => n[0]).join('')}
+                    {formData.name ? formData.name.split(' ').map(n => n[0]).join('') : "?"}
                   </span>
                 </div>
                 <div className="text-center">
@@ -72,14 +78,11 @@ const UserProfile: React.FC = () => {
               </div>
               <div className="bg-gray-100 p-4 rounded-lg">
                 <h3 className="font-semibold mb-2">Subscription</h3>
-                <p className="mb-1"><span className="text-gray-600">Plan:</span> {formData.plan}</p>
-                <p><span className="text-gray-600">Member since:</span> {formData.memberSince}</p>
-                <button className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">
-                  Upgrade Plan
-                </button>
+                <p><b>Plan:</b> {formData.plan}</p>
+                <p><b>Member since:</b> {formData.memberSince}</p>
               </div>
             </div>
-            
+
             <div className="w-2/3">
               <div className="bg-gray-100 p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-4">
@@ -91,49 +94,21 @@ const UserProfile: React.FC = () => {
                     {isEditing ? 'Cancel' : 'Edit'}
                   </button>
                 </div>
-                
+
                 {isEditing ? (
                   <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                      <label className="block text-gray-700 mb-1">Full Name</label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="w-full p-2 border rounded"
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block text-gray-700 mb-1">Email</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="w-full p-2 border rounded"
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block text-gray-700 mb-1">Company</label>
-                      <input
-                        type="text"
-                        name="company"
-                        value={formData.company}
-                        onChange={handleChange}
-                        className="w-full p-2 border rounded"
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block text-gray-700 mb-1">Role</label>
-                      <input
-                        type="text"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                        className="w-full p-2 border rounded"
-                      />
-                    </div>
+                    {["name", "email", "company", "role"].map((field) => (
+                      <div className="mb-4" key={field}>
+                        <label className="block text-gray-700 mb-1 capitalize">{field}</label>
+                        <input
+                          type="text"
+                          name={field}
+                          value={(formData as any)[field]}
+                          onChange={handleChange}
+                          className="bg-gray-300 w-full p-2 border rounded"
+                        />
+                      </div>
+                    ))}
                     <button 
                       type="submit" 
                       className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition"
@@ -142,45 +117,36 @@ const UserProfile: React.FC = () => {
                     </button>
                   </form>
                 ) : (
-                  <div>
-                    <div className="mb-4">
-                      <p><span className="font-medium">Full Name:</span> {formData.name}</p>
-                    </div>
-                    <div className="mb-4">
-                      <p><span className="font-medium">Email:</span> {formData.email}</p>
-                    </div>
-                    <div className="mb-4">
-                      <p><span className="font-medium">Company:</span> {formData.company}</p>
-                    </div>
-                    <div className="mb-4">
-                      <p><span className="font-medium">Role:</span> {formData.role}</p>
-                    </div>
-                  </div>
+                  <>
+                    <p><b>Full Name:</b> {formData.name}</p>
+                    <p><b>Email:</b> {formData.email}</p>
+                    <p><b>Company:</b> {formData.company}</p>
+                    <p><b>Role:</b> {formData.role}</p>
+                  </>
                 )}
               </div>
-              
               <div className="mt-6 bg-gray-100 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4">Account Security</h3>
-                <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition mb-4">
-                  Change Password
-                </button>
-                <button className="ml-4 bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 transition mb-4">
-                  Two-Factor Authentication
-                </button>
-                <div className="mt-6">
-                  <h4 className="font-medium mb-2">Recent Activity</h4>
-                  <ul className="text-sm">
-                    <li className="p-2 border-b">
-                      <span className="text-gray-600">Login</span> - Today, 10:45 AM
-                    </li>
-                    <li className="p-2 border-b">
-                      <span className="text-gray-600">Search performed</span> - Yesterday, 3:20 PM
-                    </li>
-                    <li className="p-2 border-b">
-                      <span className="text-gray-600">File uploaded</span> - Apr 12, 2023, 1:15 PM
-                    </li>
-                  </ul>
-                </div>
+                  <h3 className="text-xl font-semibold mb-4">Account Security</h3>
+                  <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition mb-4">
+                     Change Password
+                  </button>
+                  <button className="ml-4 bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 transition mb-4">
+                      Two-Factor Authentication
+                  </button>
+                  <div className="mt-6">
+                      <h4 className="font-medium mb-2">Recent Activity</h4>
+                      <ul className="text-sm">
+                          <li className="p-2 border-b">
+                              <span className="text-gray-600">Login</span> - Today, 10:45 AM
+                          </li>
+                          <li className="p-2 border-b">
+                              <span className="text-gray-600">Search performed</span> - Yesterday, 3:20 PM
+                          </li>
+                          <li className="p-2 border-b">
+                              <span className="text-gray-600">File uploaded</span> - Apr 12, 2023, 1:15 PM
+                          </li>
+                      </ul>
+                  </div>
               </div>
             </div>
           </div>
@@ -190,4 +156,4 @@ const UserProfile: React.FC = () => {
   );
 };
 
-export default UserProfile; 
+export default UserProfile;

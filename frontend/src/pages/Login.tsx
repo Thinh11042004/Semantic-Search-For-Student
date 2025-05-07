@@ -37,6 +37,10 @@ const Login: FC = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    console.log("Email:", email);
+    console.log("Password:", password);
+
     setIsLoading(true);
     setError('');
 
@@ -51,12 +55,13 @@ const Login: FC = () => {
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
+      if (response.ok && data.id) {   // kiểm tra có id là thành công
         await login(email, password);
-        navigate('/product', { state: { user: data.user } });
+        navigate('/product', { state: { user: data } });
       } else {
         setError(data.message || 'Email hoặc mật khẩu không đúng');
       }
+      
 
     } catch (error) {
       console.error('Lỗi đăng nhập:', error);
@@ -69,12 +74,12 @@ const Login: FC = () => {
   return (
     <div className="min-h-screen bg-[#fafbfc] text-gray-900 flex flex-col">
       <div className="flex-1 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+        <div className="max-w-md w-full bg-[#d9dcde] rounded-xl shadow-lg p-8">
           <div className="text-center mb-6">
-            <div className="text-3xl font-bold text-[#1a237e] mb-2">HUTECH Search</div>
+            <div className="text-3xl font-bold text-[#1a4e7e] mb-2">HUTECH Search</div>
             <div className="w-16 h-1 bg-[#1976d2] mx-auto mb-6"></div>
-            <h2 className="text-2xl font-bold text-gray-900">Đăng nhập</h2>
-            <p className="mt-2 text-gray-600">Vui lòng đăng nhập với tài khoản của bạn</p>
+            <h2 className="text-2xl font-bold text-black">Đăng nhập</h2>
+            <p className="mt-2 text-gray-800">Vui lòng đăng nhập với tài khoản của bạn</p>
           </div>
 
           {location.state?.message && (
@@ -91,7 +96,7 @@ const Login: FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-black">
                 Email
               </label>
               <input
@@ -106,7 +111,7 @@ const Login: FC = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-black">
                 Mật khẩu
               </label>
               <input
@@ -130,7 +135,7 @@ const Login: FC = () => {
                   disabled={isLoading}
                   className="h-4 w-4 text-[#1976d2] focus:ring-[#1976d2] border-gray-300 rounded disabled:opacity-50"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-black">
                   Ghi nhớ đăng nhập
                 </label>
               </div>
@@ -154,7 +159,7 @@ const Login: FC = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Chưa có tài khoản?{' '}
-              <Link to="/register" className="font-medium text-[#1976d2] hover:text-[#1565c0]">
+              <Link to="/register" className="font-medium text-[#1976d2] hover:text-[#1565c0] underline">
                 Đăng ký
               </Link>
             </p>

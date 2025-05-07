@@ -1,7 +1,9 @@
 /// <reference types="react" />
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+// @ts-ignore
 import { Search, Filter, SlidersHorizontal, Clock, Star } from 'lucide-react';
+
 
 // Add JSX namespace declaration to fix linter errors
 declare global {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import SearchForms from './pages/SearchForms';
-import Product from './components/Product';
+import Product from './components/Product';  
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminRequired from './components/AdminRequired';

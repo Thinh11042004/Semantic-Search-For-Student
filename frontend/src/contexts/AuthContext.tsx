@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 interface UserInfo {
+  id: number;
   name: string;
   email: string;
   company: string;
@@ -23,21 +24,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const [user, setUser] = React.useState<UserInfo | null>(null);
 
-  const login = (email: string, password: string) => {
-    // TODO: Implement actual authentication logic here
-    setIsAuthenticated(true);
-    // Set mock user data
-    setUser({
-      name: "John Doe",
-      email: email,
-      company: "Example Corp",
-      role: "Researcher",
-      plan: "Premium",
-      memberSince: "January 2023"
-    });
-    // Store authentication token in localStorage
-    localStorage.setItem('isAuthenticated', 'true');
+  const login = async (email: string, password: string) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+  
+      const userData = await res.json();
+  
+      console.log("Dữ liệu nhận được từ backend:", userData);
+  
+      if (res.ok && userData && userData.id) {
+  
+        setIsAuthenticated(true);
+        setUser({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          company: "Chưa cập nhật",
+          role: userData.role,
+          plan: "Basic",
+          memberSince: new Date(userData.created_at).toLocaleDateString()
+        });
+  
+        localStorage.setItem('userId', userData.id.toString());
+  
+      } else {
+        console.error("Dữ liệu user không hợp lệ:", userData);
+        throw new Error("Dữ liệu user không có id");
+      }
+  
+    } catch (err) {
+      console.error("Lỗi kết nối API:", err);
+    }
   };
+  
+  
 
   const register = async (email: string, password: string, fullName: string): Promise<void> => {
     // TODO: Implement actual registration logic here
@@ -53,25 +77,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(false);
     setUser(null);
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userId');    
   };
 
   React.useEffect(() => {
-    // Check if user is already authenticated on mount
-    const authStatus = localStorage.getItem('isAuthenticated');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-      // Set mock user data
-      setUser({
-        name: "John Doe",
-        email: "john.doe@example.com",
-        company: "Example Corp",
-        role: "Researcher",
-        plan: "Premium",
-        memberSince: "January 2023"
-      });
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      fetch(`http://localhost:5000/api/users/${storedUserId}`)
+        .then(res => res.json())
+        .then(data => {
+          setIsAuthenticated(true);
+          setUser({
+            id: data.id,
+            name: data.name,
+            email: data.email,
+            company: "Chưa cập nhật",
+            role: data.role,
+            plan: "Basic",
+            memberSince: new Date(data.created_at).toLocaleDateString()
+          });
+        })
+        .catch(err => console.error("Không lấy được thông tin user:", err));
     }
   }, []);
-
+  
+  
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout, register }}>
       {children}
