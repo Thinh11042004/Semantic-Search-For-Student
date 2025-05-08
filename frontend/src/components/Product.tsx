@@ -131,11 +131,11 @@ const Product: React.FC = () => {
       </div>
 
       <div
-    className={`w-full max-w-2x1 min-h-[12rem] max-h-[30rem]
-      border-2 border-dashed rounded-lg 
+      className={`w-full max-w-2x1 min-h-[12rem] max-h-[30rem]
+      bg-[#d2d3d4] border-2 border-dashed rounded-lg 
       p-8 text-center bg-white 
       shadow-md hover:shadow-lg transition-shadow 
-      flex flex-col gap-4 items-center justify-center 
+      flex flex-col gap-8 items-center justify-center 
       `}
         onDragOver={handleDragOver}
         onDrop={handleDrop}

@@ -1,13 +1,14 @@
 import os
 import logging
 from fastapi import FastAPI, Body
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
 from sentence_transformers import SentenceTransformer
 import psycopg2
 from PyPDF2 import PdfReader
-import docx
-import openpyxl
-from pydantic import BaseModel
+import docx 
+from fastapi.responses import JSONResponse
+from typing import Union, List
+# from pydantic import BaseModel
 
 # Tạo thư mục logs nếu chưa có
 if not os.path.exists("logs"):
@@ -21,28 +22,29 @@ logging.basicConfig(
 )
 
 app = FastAPI()
+model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")  # 768 chiều 
 
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# # Configure CORS
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
-# Increase request size limit
-app.max_request_size = 200 * 1024 * 1024  # 10MB
+# # Increase request size limit
+# app.max_request_size = 500 * 1024 * 1024  # 50MB
 
-model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")  # 768 chiều
+
 
 # Kết nối PostgreSQL
 conn = psycopg2.connect(
-    dbname="StudentFormDB",
-    user="admin",  # Tên người dùng PostgreSQL
-    password="123456",  # Mật khẩu
-    host="localhost",  # Hoặc tên container nếu cần kết nối từ bên ngoài
-    port="5432"
+    host="semantic_search_db",  
+    port=5432,
+    user="admin",
+    password="123456",
+    database="StudentFormDB"
 )
 cursor = conn.cursor()
 
@@ -62,23 +64,14 @@ def extract_text_from_docx(docx_path):
     doc = docx.Document(docx_path)
     return "\n".join([para.text for para in doc.paragraphs])
 
-# Helper function để đọc file Excel (xlsx)
-def extract_text_from_xlsx(xlsx_path):
-    wb = openpyxl.load_workbook(xlsx_path)
-    sheet = wb.active
-    text = ""
-    for row in sheet.iter_rows(values_only=True):
-        for cell in row:
-            if cell:
-                text += str(cell) + " "
-    return text
-
 
 # Hàm kiểm tra xem tên file đã tồn tại trong cơ sở dữ liệu chưa (Đây là phần thay đổi)
-def is_file_exists(title):
+def is_file_exists(title):  
     cursor.execute("SELECT COUNT(*) FROM froms WHERE title = %s", (title,))
     count = cursor.fetchone()[0]
     return count > 0  # Nếu count > 0, nghĩa là file đã tồn tại
+
+
 
 # Hàm xóa tất cả các bản ghi trùng tên file
 def delete_duplicate_files():
@@ -111,8 +104,6 @@ def upload_file_to_db(file_path):
         content = extract_text_from_pdf(file_path)
     elif file_path.endswith(".docx"):
         content = extract_text_from_docx(file_path)
-    elif file_path.endswith(".xlsx"):
-        content = extract_text_from_xlsx(file_path)
     else:
         logging.warning(f"Bỏ qua file không hỗ trợ: {file_path}")
         return {"error": "Unsupported file type"}
@@ -157,7 +148,7 @@ def load_default_folder():
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
 
-        if filename.endswith(".pdf") or filename.endswith(".docx") or filename.endswith(".xlsx"):
+        if filename.endswith(".pdf") or filename.endswith(".docx"):
             logging.info(f"🔄 Đang xử lý file: {file_path}")
             upload_file_to_db(file_path)
 
@@ -231,13 +222,23 @@ def top_k_search(query: str = Body(...), k: int = Body(...)):
         return {"error": f"Top-K search failed: {e}"}
 
 
-# Gọi khi app khởi động
-load_default_folder()
 
-class TextRequest(BaseModel):
-    text: str
-
+# ✅ API: Nhận văn bản, trả  vector
 @app.post("/get-embedding")
-async def get_embedding(request: TextRequest):
-    embedding = model.encode(request.text)
-    return {"embedding": embedding.tolist()}
+def get_embedding(text: Union[str, List[str]] = Body(...)):
+  
+    try:
+        if isinstance(text, str):
+            text = [text]
+        text = [t[:5000] for t in text]  # Giới hạn văn bản dài
+        embeddings = model.encode(text).tolist()
+        return {
+            "embedding": embeddings[0] if len(embeddings) == 1 else embeddings
+        }
+    except Exception as e:
+        logging.error(f"Lỗi khi sinh embedding: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Lỗi khi sinh embedding: {e}"}
+        )
+  

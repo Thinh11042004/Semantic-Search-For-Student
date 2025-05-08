@@ -89,7 +89,7 @@ const UserProfile: React.FC = () => {
                   <h3 className="text-xl font-semibold">Personal Information</h3>
                   <button 
                     onClick={() => setIsEditing(!isEditing)}
-                    className="text-blue-600 hover:text-blue-800"
+                    className="bg-[#d7d8d9] text-blue-600 hover:text-blue"
                   >
                     {isEditing ? 'Cancel' : 'Edit'}
                   </button>

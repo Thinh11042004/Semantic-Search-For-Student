@@ -4,11 +4,12 @@ const fs = require('fs');           //Phương thức thao tác hệ thống c�
 const axios = require('axios');     //Http request
 const mammoth = require('mammoth'); //Trích xuất văn bản docx
 const pdf = require('pdf-parse');   //Trích xuất văn bản pdf
-const xlsx = require('xlsx');       //Trích xuất văn bản excel
 const {getEmbedding} = require('./getFormController');
 
 const MAX_TEXT_LENGTH = 5000;   //Giới hạn độ dài văn bản upload
-const EMBEDDING_API = process.env.EMBEDDING_API || 'http://localhost:8000/get-embedding';
+const EMBEDDING_API = process.env.EMBEDDING_API;
+
+
 
 const extractTextFromFile = async (filePath) => {
     const ext = path.extname(filePath).toLowerCase();     //Lấy phần mở rộng của file
@@ -20,11 +21,7 @@ const extractTextFromFile = async (filePath) => {
         return result.value;
       } else if (ext === '.pdf') {
         const result = await pdf(buffer); // Trích xuất văn bản từ file PDF.
-        return result.text;
-      } else if (ext === '.xlsx') {
-        const workbook = xlsx.read(buffer, { type: 'buffer' }); // Đọc file EXCEL
-        const sheet = workbook.Sheets[workbook.SheetNames[0]]; // Lấy Sheet đầu tiên
-        return xlsx.utils.sheet_to_csv(sheet); //Trả về CSV
+        return result.text; 
       } else {
         throw new Error('Unsupported file type'); //Lỗi upload file ko phù hợp
       }
@@ -50,11 +47,21 @@ const extractTextFromFile = async (filePath) => {
         const title = file.originalname;  
   
       const content = await extractTextFromFile(filePath); // Trích xuất nội dung từ file.
+
+      if (!content || content.trim() === "") {
+        return res.status(400).json({ error: 'Không thể trích xuất nội dung từ file. File có thể bị lỗi hoặc rỗng.' });
+      }
+
       const truncated = content.slice(0, MAX_TEXT_LENGTH); // Cắt nội dung để đảm bảo không quá 5000 ký tự.
   
       let embed;
       try {
-        embed = await axios.post(EMBEDDING_API, { text: truncated }); // Gửi văn bản đến API FastAPI để lấy embedding.
+        embed = await axios.post(
+          EMBEDDING_API,
+          truncated,  
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+        
       } catch (e) {
         return res.status(500).json({ error: 'Failed to connect to embedding API', details: e.message }); //Thông báo lỗi kết nối không thành công.
       }

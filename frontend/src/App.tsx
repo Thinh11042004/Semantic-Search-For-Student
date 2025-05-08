@@ -9,6 +9,7 @@ import UserProfile from './components/UserProfile';
 import SearchHistory from './components/SearchHistory';
 import MainLayout from './components/MainLayout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AdminRoute from './components/AdminRoute';
 
 // Protected Route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -54,31 +55,33 @@ const App: React.FC = () => {
               path="/search-forms" 
               element={<SearchForms />} 
             />
-            <Route 
-              path="/product" 
+            
+            <Route path="/product" 
+              element={
+                      <AdminRoute>
+                      <Product />
+                      </AdminRoute>
+              } 
+            />
+            
+            <Route path="/user-profile" 
               element={
                 <ProtectedRoute>
-                  <Product />
+                      <UserProfile />
+                 </ProtectedRoute>
+              } 
+            />
+            
+            <Route path="/history" 
+              element={
+                <ProtectedRoute>
+                      <SearchHistory />
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/user-profile" 
-              element={
-                <ProtectedRoute>
-                  <UserProfile />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/history" 
-              element={
-                <ProtectedRoute>
-                  <SearchHistory />
-                </ProtectedRoute>
-              } 
-            />
+            
             <Route path="/admin-required" element={<AdminRequired />} />
+          
           </Routes>
         </MainLayout>
       </Router>

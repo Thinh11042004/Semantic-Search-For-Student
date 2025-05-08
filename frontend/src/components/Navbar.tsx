@@ -16,6 +16,9 @@ const Navbar: React.FC = () => {
   const { isAuthenticated, logout, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+
+
+
   return (
     <nav className="bg-blue-600 shadow-md">
       <div className="container mx-auto px-4">
@@ -44,14 +47,14 @@ const Navbar: React.FC = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            <NavLink to="/search-forms" current={location.pathname}>Search</NavLink>
-            <NavLink to="/product" current={location.pathname}>Product</NavLink>
-            
+            <NavLink to="/search-forms" current={location.pathname}>Search</NavLink>            
             {isAuthenticated && (
               <>
                 <NavLink to="/history" current={location.pathname}>History</NavLink>
                 <NavLink to="/user-profile" current={location.pathname}>Profile</NavLink>
-                
+                {user?.role === "admin" && (
+                      <NavLink to="/product" current={location.pathname}>Product</NavLink> 
+                )}
                 {/* Logout Button */}
                 <button 
                   onClick={logout} 

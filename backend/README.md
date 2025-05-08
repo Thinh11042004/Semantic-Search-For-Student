@@ -1,1 +1,2 @@
-# Backend - Node.js Express
+
+uvicorn app:app --reload --port 8000

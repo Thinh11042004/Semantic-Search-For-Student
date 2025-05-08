@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 
 interface Form {
   id: number;
-  title: string;
+  title: string,
+  created_at: Date;
 }
 
 
@@ -95,24 +96,79 @@ const TextIcon = () => (
 
 export default function SearchForms() {
   const [searchQuery, setSearchQuery] = useState("");
-
   const [forms, setForms] = useState<Form[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [debounceId, setDebounceId] = useState<NodeJS.Timeout | null>(null);
 
-useEffect(() => {
-fetch(`http://localhost:5000/api/forms/page?page=${page}&limit=8`)
-.then((res) => res.json())
-.then((data) => {
-  setForms(data.forms);
-  setTotalPages(data.totalPages);
-})
-.catch((err) => console.error("Error loading forms:", err));
-}, [page]);
+  // Load form theo page mặc định
+  const loadForms = (pageNum = 1) => {
+    setLoading(true);
+    fetch(`http://localhost:5000/api/forms/page?page=${pageNum}&limit=8`)
+      .then(res => res.json())
+      .then(data => {
+        setForms(data.forms);
+        setTotalPages(data.totalPages);
+        setIsSearching(false);
+      })
+      .catch(err => console.error("Lỗi tải forms:", err))
+      .finally(() => setLoading(false));
+  };
+
+  // Khi mới vào trang, load page đầu tiên
+  useEffect(() => {
+    if (!isSearching) {
+      loadForms(page);
+    }
+  }, [page]);
+
+  // Xử lý tìm kiếm khi bấm nút hoặc Enter
+  const handleSearch = () => {
+    if (searchQuery.trim() === "") {
+      loadForms(1);
+      return;
+    }
+
+    setLoading(true);
+    fetch(`http://localhost:5000/api/search?query=${encodeURIComponent(searchQuery)}`)
+      .then(res => res.json())
+      .then(data => {
+        setForms(data.results || []);
+        setTotalPages(1);
+        setIsSearching(true);
+      })
+      .catch(err => console.error("Lỗi tìm kiếm:", err))
+      .finally(() => setLoading(false));
+  };
+
+  // Xử lý nhấn Enter trong ô tìm kiếm
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  // Khi người dùng gõ vào input (debounce 0.5 giây)
+  useEffect(() => {
+    if (debounceId) clearTimeout(debounceId);
+  
+    const id = setTimeout(() => {
+      if (searchQuery.trim() !== "") {
+        handleSearch();
+      } else {
+        loadForms(1);
+      }
+    }, 500);
+  
+    setDebounceId(id);
+  
+    return () => clearTimeout(id);
+  }, [searchQuery]);
+  
 
   return (
-
-
     <div className="flex flex-col items-center bg-[#fafbfc] text-gray-900">
       {/* Header */}
       <div className="w-full flex flex-col items-center pt-12 pb-4">
@@ -120,16 +176,21 @@ fetch(`http://localhost:5000/api/forms/page?page=${page}&limit=8`)
         <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl">
           Transform the way you search through documents with our advanced semantic search technology.
         </p>
+
         {/* Search Bar */}
-        <div className="w-full max-w-xl flex items-center bg-white rounded-full shadow-lg px-6 py-3 mb-12 border border-gray-100">
+        <div className="w-full max-w-xl flex items-center bg-white rounded-full shadow-lg px-6 py-3 mb-8 border border-gray-100">
           <input
             type="text"
             placeholder="Search across all your documents..."
             className="flex-1 bg-transparent outline-none text-lg placeholder-gray-400"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
-          <button className="ml-2 bg-[#1976d2] hover:bg-[#1565c0] transition-colors text-white rounded-full p-2 shadow-md">
+          <button
+            onClick={handleSearch}
+            className="ml-2 bg-[#1976d2] hover:bg-[#1565c0] transition-colors text-white rounded-full p-2 shadow-md"
+          >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" strokeWidth="2" />
               <path d="M21 21l-4.35-4.35" strokeWidth="2" />
@@ -138,137 +199,142 @@ fetch(`http://localhost:5000/api/forms/page?page=${page}&limit=8`)
         </div>
       </div>
 
-      
-      <div className="w-full max-w-5xl px-4 mb-16">
-  {forms.length === 0 ? (
-    <p className="text-center text-gray-500">Chưa có biểu mẫu nào.</p>
-  ) : (
-    <div className="flex flex-col gap-4">
-      {forms.map((form) => {
-        let icon;
-        const lowerTitle = form.title.toLowerCase();
-        if (lowerTitle.endsWith(".doc") || lowerTitle.endsWith(".docx")) {
-          icon = <WordIcon />;
-        } else if (lowerTitle.endsWith(".pdf")) {
-          icon = <PDFIcon />;
-        } else if (lowerTitle.endsWith(".xls") || lowerTitle.endsWith(".xlsx") || lowerTitle.endsWith(".csv")) {
-          icon = <ExcelIcon />;
-        } else {
-          icon = <TextIcon />;
-        }
+      {/* Loading spinner */}
+      {loading && (
+        <p className="text-gray-500 mb-4">Đang tải dữ liệu...</p>
+      )}
 
-        return (
-          <div key={form.id} className="flex gap-4 items-center bg-gray-200 rounded-lg p-4 shadow hover:shadow-md transition-shadow">
-            <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-lg">
-              {icon}
-            </div>
-            <div className="flex flex-col">
-              <span className="font-semibold text-lg">{form.title}</span>
-              <span className="text-sm text-gray-500">Biểu mẫu sinh viên</span>
-            </div>
+      {/* Results */}
+      <div className="w-full max-w-5xl px-4 mb-8">
+        {forms.length === 0 && !loading ? (
+          <p className="text-center text-gray-500">Không tìm thấy biểu mẫu nào.</p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {forms.map(form => {
+              let icon;
+              const lowerTitle = form.title.toLowerCase();
+              if (lowerTitle.endsWith(".doc") || lowerTitle.endsWith(".docx")) {
+                icon = <WordIcon />;
+              } else if (lowerTitle.endsWith(".pdf")) {
+                icon = <PDFIcon />;
+              } else if (lowerTitle.endsWith(".xls") || lowerTitle.endsWith(".xlsx") || lowerTitle.endsWith(".csv")) {
+                icon = <ExcelIcon />;
+              } else {
+                icon = <TextIcon />;
+              }
+
+              return (
+                <div key={form.id} className="flex gap-4 items-center bg-gray-200 rounded-lg p-4 shadow hover:shadow-md transition-shadow">
+                  <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-lg">
+                    {icon}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-lg">{form.title}</span>
+                    <p className="text-sm text-gray-500">
+                      {new Date(form.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        );
-      })}
-    </div>
-  )}
+        )}
 
-  {/* Pagination */}
-  <div className="flex justify-center items-center gap-4 mt-6">
-    <button
-      onClick={() => setPage((p) => Math.max(p - 1, 1))}
-      disabled={page === 1}
-    className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-80"
-    >
-      Trang trước
-    </button>
-    <span>
-      Trang {page} / {totalPages}
-    </span>
-    <button
-      onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-      disabled={page === totalPages}
-      className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-80"
-    >
-      Trang sau
-    </button>
-  </div>
+        {/* Pagination */}
+        {!isSearching && forms.length > 0 && (
+          <div className="flex justify-center items-center gap-4 mt-6">
+            <button
+              onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-50"
+            >
+              Trang trước
+            </button>
+            <span>Trang {page} / {totalPages}</span>
+            <button
+              onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-50"
+            >
+              Trang sau
+            </button>
+          </div>
+        )}
+      </div>
+
+   {/* Features Grid */}
+   <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 pb-20 px-4">
+   {features.map((feature, idx) => (
+     <div
+       key={feature.title}
+       className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-8 flex flex-col items-start"
+     >
+       <div className="bg-purple-100 rounded-xl p-3 mb-4 flex items-center justify-center">
+         {feature.icon}
+       </div>
+       <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+       <p className="text-gray-600">{feature.description}</p>
+     </div>
+   ))}
+ </div>
+
+ {/* Supported File Types Section */}
+ <div className="w-full bg-white py-16">
+   <div className="max-w-5xl mx-auto px-4">
+     <div className="text-center mb-12">
+       <h2 className="text-3xl font-bold mb-3">Supported File Types</h2>
+       <p className="text-gray-600 max-w-2xl mx-auto">
+         We support a wide range of document formats to meet your needs
+       </p>
+     </div>
+     
+     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 justify-items-center">
+       <div className="flex flex-col items-center">
+         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+           <WordIcon />
+         </div>
+         <span className="text-gray-700 font-medium">Word</span>
+       </div>
+       
+       <div className="flex flex-col items-center">
+         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+           <PDFIcon />
+         </div>
+         <span className="text-gray-700 font-medium">PDF</span>
+       </div>
+       
+       <div className="flex flex-col items-center">
+         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+           <ExcelIcon />
+         </div>
+         <span className="text-gray-700 font-medium">Excel</span>
+       </div>
+       
+       <div className="flex flex-col items-center">
+         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+           <PowerPointIcon />
+         </div>
+         <span className="text-gray-700 font-medium">PowerPoint</span>
+       </div>
+       
+       <div className="flex flex-col items-center">
+         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+           <MarkdownIcon />
+         </div>
+         <span className="text-gray-700 font-medium">Markdown</span>
+       </div>
+       
+       <div className="flex flex-col items-center">
+         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
+           <TextIcon />
+         </div>
+         <span className="text-gray-700 font-medium">Text</span>
+       </div>
+     </div>
+   </div>
+ </div>
 </div>
 
-
-
-      {/* Features Grid */}
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 pb-20 px-4">
-        {features.map((feature, idx) => (
-          <div
-            key={feature.title}
-            className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-8 flex flex-col items-start"
-          >
-            <div className="bg-purple-100 rounded-xl p-3 mb-4 flex items-center justify-center">
-              {feature.icon}
-            </div>
-            <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-            <p className="text-gray-600">{feature.description}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Supported File Types Section */}
-      <div className="w-full bg-white py-16">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-3">Supported File Types</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              We support a wide range of document formats to meet your needs
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 justify-items-center">
-            <div className="flex flex-col items-center">
-              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-                <WordIcon />
-              </div>
-              <span className="text-gray-700 font-medium">Word</span>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-                <PDFIcon />
-              </div>
-              <span className="text-gray-700 font-medium">PDF</span>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-                <ExcelIcon />
-              </div>
-              <span className="text-gray-700 font-medium">Excel</span>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-                <PowerPointIcon />
-              </div>
-              <span className="text-gray-700 font-medium">PowerPoint</span>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-                <MarkdownIcon />
-              </div>
-              <span className="text-gray-700 font-medium">Markdown</span>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-                <TextIcon />
-              </div>
-              <span className="text-gray-700 font-medium">Text</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-
+);
+     
 } 

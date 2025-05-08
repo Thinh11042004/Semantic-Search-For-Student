@@ -100,41 +100,66 @@ const Register: FC = () => {
     }
   };
 
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+    setIsLoading(true);
+    setErrors({});
+  
+    // Bước 1: Kiểm tra hợp lệ form
     if (!validateForm()) {
+      setIsLoading(false);
       return;
     }
-
+  
+    // Bước 2: Kiểm tra đồng ý điều khoản
     if (!termsAccepted) {
       setErrors(prev => ({
         ...prev,
         terms: 'Vui lòng đồng ý với điều khoản dịch vụ'
       }));
+      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
-
+  
+    // Bước 3: Gửi dữ liệu lên server
     try {
-      await register(formData.email, formData.password, formData.fullName);
-      navigate('/login', { 
-        state: { 
-          message: 'Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.' 
-        } 
+      const response = await fetch('http://localhost:5000/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.fullName, 
+          email: formData.email,
+          password: formData.password
+        })
       });
-    } catch (error) {
-      console.error('Registration failed:', error);
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Thành công => chuyển sang login
+        navigate('/login', { state: { message: 'Đăng ký thành công. Hãy đăng nhập!' } });
+      } else {
+        // Thất bại => hiện lỗi từ backend trả về
+        setErrors(prev => ({
+          ...prev,
+          submit: data.error || 'Đăng ký thất bại'
+        }));
+      }
+    } catch (err) {
+      console.error('Lỗi đăng ký:', err);
       setErrors(prev => ({
         ...prev,
-        submit: 'Đăng ký thất bại. Vui lòng thử lại sau.'
+        submit: 'Lỗi kết nối tới server'
       }));
     } finally {
       setIsLoading(false);
     }
   };
 
+  
   return (
     <div className="min-h-screen bg-[#fafbfc] text-black flex flex-col">
       <div className="flex-1 flex items-center justify-center px-4 py-8">
