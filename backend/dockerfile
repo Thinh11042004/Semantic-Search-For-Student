@@ -1,16 +1,18 @@
-FROM node:18
+# Dockerfile (backend)
+FROM node:18-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install 
+# Cài nodemon toàn cục
+RUN npm install -g nodemon
 
-RUN npm install nodemon --save-dev
+# Cài deps trong dự án
+RUN npm install
 
 COPY . .
 
 EXPOSE 5000
 
-CMD ["npm", "run", "dev"]
-
+CMD ["nodemon", "app.js"]
