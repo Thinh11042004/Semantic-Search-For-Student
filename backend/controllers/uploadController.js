@@ -4,9 +4,9 @@ const fs = require('fs');           //Phương thức thao tác hệ thống c�
 const axios = require('axios');     //Http request
 const mammoth = require('mammoth'); //Trích xuất văn bản docx
 const pdf = require('pdf-parse');   //Trích xuất văn bản pdf
-const {getEmbedding} = require('./getFormController');
 
-const MAX_TEXT_LENGTH = 5000;   //Giới hạn độ dài văn bản upload
+
+const MAX_TEXT_LENGTH = 20000;   //Giới hạn độ dài văn bản upload
 const EMBEDDING_API = process.env.EMBEDDING_API;
 
 
@@ -52,7 +52,7 @@ const extractTextFromFile = async (filePath) => {
         return res.status(400).json({ error: 'Không thể trích xuất nội dung từ file. File có thể bị lỗi hoặc rỗng.' });
       }
 
-      const truncated = content.slice(0, MAX_TEXT_LENGTH); // Cắt nội dung để đảm bảo không quá 5000 ký tự.
+       const truncated = content.slice(0, MAX_TEXT_LENGTH); // Cắt nội dung để đảm bảo không quá 20000 ký tự.
   
       let embed;
       try {

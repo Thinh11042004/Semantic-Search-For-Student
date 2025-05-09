@@ -1,47 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { logActivity } from '../components/activityLogger'
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';  // Import useNavigate để điều hướng
+import { logActivity } from '../components/activityLogger';
 
-interface Form {
-  id: number;
-  title: string,
-  created_at: Date;
-}
-
-
-const features = [
-  {
-    title: "Document Search",
-    description: "Search through Word, PDF, and text documents with advanced semantic understanding.",
-    icon: (
-      <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <rect x="4" y="4" width="16" height="16" rx="4" strokeWidth="2" />
-        <path d="M8 8h8M8 12h4" strokeWidth="2" />
-      </svg>
-    ),
-  },
-  {
-    title: "Spreadsheet Analysis",
-    description: "Extract insights from Excel and CSV files with intelligent data processing.",
-    icon: (
-      <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <rect x="3" y="5" width="18" height="14" rx="3" strokeWidth="2" />
-        <path d="M8 10h8M8 14h8" strokeWidth="2" />
-      </svg>
-    ),
-  },
-  {
-    title: "Presentation Search",
-    description: "Find content within PowerPoint presentations and other slide formats.",
-    icon: (
-      <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <rect x="4" y="4" width="16" height="16" rx="4" strokeWidth="2" />
-        <path d="M8 8h8v8H8z" strokeWidth="2" />
-      </svg>
-    ),
-  },
-];
-
-// File type icons
+// Các icon cho file DOCX và PDF
 const WordIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
     <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#4285F4" />
@@ -60,39 +21,13 @@ const PDFIcon = () => (
   </svg>
 );
 
-const ExcelIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
-    <path d="M4 3h13l4 4v14a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z" fill="#21A366" />
-    <path d="M17 3v4h4" fill="#107C41" />
-    <rect x="7" y="9" width="10" height="2" fill="#ffffff" />
-    <rect x="7" y="13" width="10" height="2" fill="#ffffff" />
-    <rect x="7" y="17" width="10" height="2" fill="#ffffff" />
-  </svg>
-);
-
-const PowerPointIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
-    <path d="M4 3h13l4 4v14a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z" fill="#D24726" />
-    <path d="M17 3v4h4" fill="#A53005" />
-    <circle cx="12" cy="14" r="3" fill="#ffffff" />
-    <path d="M10 11h3.5a1.5 1.5 0 010 3H10v-3z" fill="#ffffff" />
-  </svg>
-);
-
-const MarkdownIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
-    <path d="M3 3h18a2 2 0 012 2v14a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2z" fill="#7E57C2" />
-    <path d="M5 7v10h3V9.5l2 2.5 2-2.5V17h3V7H12l-2 2.5L8 7H5z" fill="#ffffff" />
-  </svg>
-);
-
-const TextIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
-    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#607D8B" />
-    <path d="M14 2v6h6" fill="#B0BEC5" />
-    <path d="M8 12h8M8 16h8M8 8h2" fill="none" stroke="#ffffff" strokeWidth="1.5" />
-  </svg>
-);
+interface Form {
+  id: number;
+  title: string;
+  content: string;
+  filePath: string;
+  created_at: Date;
+}
 
 export default function SearchForms() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -102,6 +37,7 @@ export default function SearchForms() {
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [debounceId, setDebounceId] = useState<NodeJS.Timeout | null>(null);
+  const navigate = useNavigate();
 
   // Load form theo page mặc định
   const loadForms = (pageNum = 1) => {
@@ -143,7 +79,6 @@ export default function SearchForms() {
         if (userId) {
             logActivity(userId, 'search', `Tìm kiếm với từ khóa: ${searchQuery}`);
         }
-        
       })
       .catch(err => console.error("Lỗi tìm kiếm:", err))
       .finally(() => setLoading(false));
@@ -159,7 +94,7 @@ export default function SearchForms() {
   // Khi người dùng gõ vào input (debounce 0.5 giây)
   useEffect(() => {
     if (debounceId) clearTimeout(debounceId);
-  
+
     const id = setTimeout(() => {
       if (searchQuery.trim() !== "") {
         handleSearch();
@@ -167,16 +102,14 @@ export default function SearchForms() {
         loadForms(1);
       }
     }, 500);
-  
+
     setDebounceId(id);
-  
+
     return () => clearTimeout(id);
   }, [searchQuery]);
-  
 
   return (
     <div className="flex flex-col items-center bg-[#fafbfc] text-gray-900">
-      {/* Header */}
       <div className="w-full flex flex-col items-center pt-12 pb-4">
         <h1 className="text-4xl font-bold mb-2 text-center">Intelligent Document Search & Analysis</h1>
         <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl">
@@ -205,7 +138,6 @@ export default function SearchForms() {
         </div>
       </div>
 
-      {/* Loading spinner */}
       {loading && (
         <p className="text-gray-500 mb-4">Đang tải dữ liệu...</p>
       )}
@@ -216,131 +148,53 @@ export default function SearchForms() {
           <p className="text-center text-gray-500">Không tìm thấy biểu mẫu nào.</p>
         ) : (
           <div className="flex flex-col gap-4">
-            {forms.map(form => {
+            {forms.map((form) => {
               let icon;
               const lowerTitle = form.title.toLowerCase();
-              if (lowerTitle.endsWith(".doc") || lowerTitle.endsWith(".docx")) {
+              if (lowerTitle.endsWith(".docx")) {
                 icon = <WordIcon />;
               } else if (lowerTitle.endsWith(".pdf")) {
                 icon = <PDFIcon />;
-              } else if (lowerTitle.endsWith(".xls") || lowerTitle.endsWith(".xlsx") || lowerTitle.endsWith(".csv")) {
-                icon = <ExcelIcon />;
-              } else {
-                icon = <TextIcon />;
               }
 
               return (
-                <div key={form.id} className="flex gap-4 items-center bg-gray-200 rounded-lg p-4 shadow hover:shadow-md transition-shadow">
+                <div
+                  key={form.id}
+                  className="flex gap-4 items-center bg-gray-200 rounded-lg p-4 shadow hover:shadow-md transition-shadow"
+                  onClick={() => navigate(`/open-file/${form.id}`)}  // Điều hướng khi nhấn vào file
+                >
                   <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-lg">
                     {icon}
                   </div>
                   <div className="flex flex-col">
                     <span className="font-semibold text-lg">{form.title}</span>
-                    <p className="text-sm text-gray-500">
-                      {new Date(form.created_at).toLocaleDateString()}
-                    </p>
+                    <p className="text-sm text-gray-500">{new Date(form.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
-
-        {/* Pagination */}
-        {!isSearching && forms.length > 0 && (
-          <div className="flex justify-center items-center gap-4 mt-6">
-            <button
-              onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-              className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-50"
-            >
-              Trang trước
-            </button>
-            <span>Trang {page} / {totalPages}</span>
-            <button
-              onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={page === totalPages}
-              className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-50"
-            >
-              Trang sau
-            </button>
-          </div>
-        )}
       </div>
 
-   {/* Features Grid */}
-   <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 pb-20 px-4">
-   {features.map((feature, idx) => (
-     <div
-       key={feature.title}
-       className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-8 flex flex-col items-start"
-     >
-       <div className="bg-purple-100 rounded-xl p-3 mb-4 flex items-center justify-center">
-         {feature.icon}
-       </div>
-       <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-       <p className="text-gray-600">{feature.description}</p>
-     </div>
-   ))}
- </div>
-
- {/* Supported File Types Section */}
- <div className="w-full bg-white py-16">
-   <div className="max-w-5xl mx-auto px-4">
-     <div className="text-center mb-12">
-       <h2 className="text-3xl font-bold mb-3">Supported File Types</h2>
-       <p className="text-gray-600 max-w-2xl mx-auto">
-         We support a wide range of document formats to meet your needs
-       </p>
-     </div>
-     
-     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 justify-items-center">
-       <div className="flex flex-col items-center">
-         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-           <WordIcon />
-         </div>
-         <span className="text-gray-700 font-medium">Word</span>
-       </div>
-       
-       <div className="flex flex-col items-center">
-         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-           <PDFIcon />
-         </div>
-         <span className="text-gray-700 font-medium">PDF</span>
-       </div>
-       
-       <div className="flex flex-col items-center">
-         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-           <ExcelIcon />
-         </div>
-         <span className="text-gray-700 font-medium">Excel</span>
-       </div>
-       
-       <div className="flex flex-col items-center">
-         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-           <PowerPointIcon />
-         </div>
-         <span className="text-gray-700 font-medium">PowerPoint</span>
-       </div>
-       
-       <div className="flex flex-col items-center">
-         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-           <MarkdownIcon />
-         </div>
-         <span className="text-gray-700 font-medium">Markdown</span>
-       </div>
-       
-       <div className="flex flex-col items-center">
-         <div className="bg-[#f8f9fa] rounded-full p-4 mb-3">
-           <TextIcon />
-         </div>
-         <span className="text-gray-700 font-medium">Text</span>
-       </div>
-     </div>
-   </div>
- </div>
-</div>
-
-);
-     
-} 
+      {/* Pagination */}
+      <div className="flex justify-center items-center gap-4 mt-6">
+        <button
+          onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-50"
+        >
+          Trang trước
+        </button>
+        <span>Trang {page} / {totalPages}</span>
+        <button
+          onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={page === totalPages}
+          className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-50"
+        >
+          Trang sau
+        </button>
+      </div>
+    </div>
+  );
+}

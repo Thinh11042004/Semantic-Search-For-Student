@@ -10,6 +10,7 @@ import SearchHistory from './components/SearchHistory';
 import MainLayout from './components/MainLayout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AdminRoute from './components/AdminRoute';
+import OpenFile from './pages/OpenFile'; 
 
 // Protected Route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -81,7 +82,7 @@ const App: React.FC = () => {
             />
             
             <Route path="/admin-required" element={<AdminRequired />} />
-          
+            <Route path="/open-file/:id" element={<OpenFile />} />
           </Routes>
         </MainLayout>
       </Router>

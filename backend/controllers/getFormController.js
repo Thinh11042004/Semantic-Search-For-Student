@@ -64,10 +64,34 @@ const getEmbedding = async (req, res) => {
   }
 };
 
+// API lấy nội dung của file theo ID
+const getFormById = async (req, res) => {
+  const { id } = req.params; // Lấy id từ URL
+  try {
+    const result = await pool.query('SELECT * FROM forms WHERE id = $1', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const file = result.rows[0];  // Lấy thông tin file từ cơ sở dữ liệu
+    res.json({
+      title: file.title,
+      content: file.content,  // Nội dung của file
+      filePath: file.file_path  // Đường dẫn file (dùng để tải về)
+    });
+  } catch (err) {
+    console.error('Error fetching file:', err);
+    res.status(500).json({ error: 'Failed to fetch file' });
+  }
+};
+
+
 
 
   module.exports = { 
     getForms,
     getFormsByPage,
-    getEmbedding
+    getEmbedding,
+    getFormById
 };
