@@ -4,6 +4,7 @@ const cors = require('cors');
 const formRoutes = require('./routes/formRoutes');
 const userRoutes = require('./routes/userRoutes');
 const userController = require('./controllers/userController');
+const activityRoutes = require('./routes/activityRoutes');
 
 require('dotenv').config();
 
@@ -19,6 +20,7 @@ app.use('/uploads', express.static('uploads'));
 // Routes
 app.use('/api', formRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api', activityRoutes);
 
 // Kiểm tra server
 app.get('/', (req, res) => {

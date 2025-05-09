@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
+
+
+
 const UserProfile: React.FC = () => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -12,6 +15,9 @@ const UserProfile: React.FC = () => {
     plan: "",
     memberSince: ""
   });
+
+  // Lưu activity
+const [activities, setActivities] = useState<{ type: string, time: string }[]>([]);
 
   // Khi user thay đổi hoặc lần đầu mount
   useEffect(() => {
@@ -32,6 +38,13 @@ const UserProfile: React.FC = () => {
         .catch(err => {
           console.error("Lỗi khi lấy user:", err);
         });
+        // Lấy hoạt động gần đây
+    fetch(`http://localhost:5000/api/users/${user.id}/activity`)
+    .then(res => res.json())
+    .then(data => {
+        setActivities(data.activities || []);
+    })
+    .catch(err => console.error("Lỗi khi lấy activity:", err));
     }
   }, [user]);
 
@@ -136,15 +149,21 @@ const UserProfile: React.FC = () => {
                   <div className="mt-6">
                       <h4 className="font-medium mb-2">Recent Activity</h4>
                       <ul className="text-sm">
-                          <li className="p-2 border-b">
-                              <span className="text-gray-600">Login</span> - Today, 10:45 AM
-                          </li>
-                          <li className="p-2 border-b">
+                        {activities.length > 0 ? (
+                            activities.map((activity, idx) => (
+                              <li key={idx} className="p-2 border-b">
+                                <span className="text-gray-600">{activity.type}</span> - {new Date(activity.time).toLocaleString()}
+                              </li>
+                            ))
+                          ) : (
+                              <li className="p-2 text-gray-500">Không có hoạt động nào.</li>
+                          )}
+                          {/* <li className="p-2 border-b">
                               <span className="text-gray-600">Search performed</span> - Yesterday, 3:20 PM
                           </li>
                           <li className="p-2 border-b">
                               <span className="text-gray-600">File uploaded</span> - Apr 12, 2023, 1:15 PM
-                          </li>
+                          </li> */}
                       </ul>
                   </div>
               </div>

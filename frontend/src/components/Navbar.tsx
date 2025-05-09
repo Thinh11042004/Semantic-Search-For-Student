@@ -24,7 +24,7 @@ const Navbar: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-3">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 transition transform hover:scale-105 duration-300">
+          <Link to="/search-forms" className="flex items-center space-x-2 transition transform hover:scale-105 duration-300">
             <div className="bg-white text-blue-600 font-bold rounded-full h-8 w-8 flex items-center justify-center">
               <span>H</span>
             </div>

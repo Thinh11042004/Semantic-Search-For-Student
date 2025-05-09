@@ -1,6 +1,7 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { logActivity } from '../components/activityLogger'
 
 // Add JSX namespace declaration to fix linter errors
 declare global {
@@ -57,10 +58,14 @@ const Login: FC = () => {
 
       if (response.ok && data.id) {   // kiểm tra có id là thành công
         await login(email, password);
-        navigate('/product', { state: { user: data } });
-      } else {
+    
+         // ✅ Ghi activity đăng nhập
+    await logActivity(data.id, 'Login', 'Đăng nhập thành công');
+    
+        navigate('/search-forms', { state: { user: data } });
+    } else {
         setError(data.message || 'Email hoặc mật khẩu không đúng');
-      }
+    }
       
 
     } catch (error) {

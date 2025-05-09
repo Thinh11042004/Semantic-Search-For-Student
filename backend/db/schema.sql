@@ -19,8 +19,13 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-drop Table forms
+CREATE TABLE activities (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(50),     
+    description TEXT,      
+    time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-SELECT * FROM users;
 
 

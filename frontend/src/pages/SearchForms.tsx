@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import { logActivity } from '../components/activityLogger'
 
 interface Form {
   id: number;
@@ -138,6 +138,12 @@ export default function SearchForms() {
         setForms(data.results || []);
         setTotalPages(1);
         setIsSearching(true);
+
+        const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
+        if (userId) {
+            logActivity(userId, 'search', `Tìm kiếm với từ khóa: ${searchQuery}`);
+        }
+        
       })
       .catch(err => console.error("Lỗi tìm kiếm:", err))
       .finally(() => setLoading(false));
