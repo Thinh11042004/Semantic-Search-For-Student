@@ -1,6 +1,8 @@
 const axios = require('axios'); // Thư viện gửi HTTP request
 
-const EMBEDDING_API = process.env.SEARCH_API; 
+// Lấy URL API tìm kiếm từ biến môi trường
+const SEARCH_API = process.env.SEARCH_API; 
+
 // ------------------------------
 // API tìm kiếm biểu mẫu theo semantic search
 // ------------------------------
@@ -8,34 +10,25 @@ const searchForms = async (req, res) => {
     try {
         const { query } = req.query;
 
-        // -------------------------
-        // Kiểm tra hợp lệ đầu vào.
-        // -------------------------
+        // Kiểm tra hợp lệ đầu vào
         if (!query || typeof query !== 'string' || query.trim() === '') {
             return res.status(400).json({ error: 'Thiếu hoặc sai định dạng query' });
         }
 
-        // -------------------------
-        // Gửi request sang AI service /search
-        // -------------------------
-        console.log('🔎 Gửi truy vấn đến AI /search:', query);
-        const aiResponse = await axios.post(`${EMBEDDING_API}/search`, {
-            query: query.trim(),
-            top_k: 10
-        });
+        // Gửi request đến API /search từ app.py
+        console.log('🔎 Gửi truy vấn đến backend /search:', query);
+
+        // Gọi API tìm kiếm của app.py
+        const aiResponse = await axios.get(`${SEARCH_API}?query=${encodeURIComponent(query.trim())}`);
 
         const data = aiResponse.data;
 
-        // -------------------------
-        // Kiểm tra kết quả trả về hợp lệ không
-        // -------------------------
+        // Kiểm tra kết quả trả về từ API
         if (!data || !Array.isArray(data.results)) {
-            return res.status(500).json({ error: 'Kết quả trả về không hợp lệ từ AI service' });
+            return res.status(500).json({ error: 'Kết quả trả về không hợp lệ từ API tìm kiếm' });
         }
 
-        // -------------------------
-        // Trả kết quả về frontend
-        // -------------------------
+        // Trả kết quả tìm kiếm về frontend
         return res.status(200).json({
             query,
             totalMatches: data.results.length,
@@ -43,7 +36,6 @@ const searchForms = async (req, res) => {
                 title: item.title,
                 file_path: item.file_path,
                 created_at: item.created_at || new Date(),
-                similarity: parseFloat(item.similarity).toFixed(4)
             }))
         });
 

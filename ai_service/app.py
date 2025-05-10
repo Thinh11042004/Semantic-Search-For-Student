@@ -67,7 +67,7 @@ def extract_text_from_docx(docx_path):
 
 # Hàm kiểm tra xem tên file đã tồn tại trong cơ sở dữ liệu chưa (Đây là phần thay đổi)
 def is_file_exists(title):  
-    cursor.execute("SELECT COUNT(*) FROM froms WHERE title = %s", (title,))
+    cursor.execute("SELECT COUNT(*) FROM forms WHERE title = %s", (title,))
     count = cursor.fetchone()[0]
     return count > 0  # Nếu count > 0, nghĩa là file đã tồn tại
 
@@ -77,7 +77,7 @@ def is_file_exists(title):
 def delete_duplicate_files():
     try:
         cursor.execute("""
-            DELETE FROM froms
+            DELETE FROM forms
             WHERE ctid NOT IN (
                 SELECT min(ctid)
                 FROM documents
@@ -112,7 +112,7 @@ def upload_file_to_db(file_path):
     
     try:
         cursor.execute(
-            "INSERT INTO froms (title, content, embedding) VALUES (%s, %s, %s)",
+            "INSERT INTO forms (title, content, embedding) VALUES (%s, %s, %s)",
             (title, content, embedding)
         )
         conn.commit()
@@ -123,61 +123,38 @@ def upload_file_to_db(file_path):
         conn.rollback()
         return {"error": f"Failed to upload file: {e}"}
 
-# ✅ API để upload file bất kỳ (nằm trong hoặc ngoài thư mục mặc định)
-@app.post("/upload")
-def upload_form(file_path: str = Body(...)):
-    logging.info(f"📥 Đang upload file từ API: {file_path}")
-    return upload_file_to_db(file_path)
 
-# ✅ API lấy danh sách các file đã upload
-@app.get("/uploaded-files")
-def get_uploaded_files():
-    try:
-        cursor.execute("SELECT title FROM froms ORDER BY id")
-        rows = cursor.fetchall()
-        return {"uploaded_files": [row[0] for row in rows]}
-    except Exception as e:
-        logging.error(f"Lỗi khi truy vấn danh sách file: {e}")
-        return {"error": "Failed to retrieve uploaded files"}
-
-# ✅ Khi khởi động, duyệt folder mặc định và upload nếu chưa có
-def load_default_folder():
-    folder_path = r"D:\semantic_search_project\Form"
-    logging.info(f"📂 Đang load biểu mẫu từ thư mục mặc định: {folder_path}")
-
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
-
-        if filename.endswith(".pdf") or filename.endswith(".docx"):
-            logging.info(f"🔄 Đang xử lý file: {file_path}")
-            upload_file_to_db(file_path)
-
-@app.post("/search")
-def search_form(query: str = Body(...)):
+@app.get("/search")
+def search_form(query: str):
     logging.info(f"🔍 Đang tìm kiếm với truy vấn: {query}")
-    
     try:
         query_embedding = model.encode(query)
         logging.info(f"Query embedding: {query_embedding[:10]}")
 
         cursor.execute("""
-            SELECT title, content
-            FROM froms
-            ORDER BY embedding <=> %s::vector  -- ✅ Ép kiểu về vector
-            LIMIT 1;
-        """, (query_embedding.tolist(),))  # ✅ Đưa vào dưới dạng list
+            SELECT title, content, file_path, created_at
+            FROM forms
+            ORDER BY embedding <=> %s::vector
+            LIMIT 1
+        """, (query_embedding.tolist(),))
 
         result = cursor.fetchone()
         if result:
-            return {
+           return {
                 "query": query,
-                "matched_title": result[0],
-                "matched_content": result[1][:500] + "..."
+                "results": [
+                    {
+                        "title": result[0],
+                        "content": result[1][:500] + "...",
+                        "file_path": result[2],
+                        "created_at": str(result[3]) 
+                    }
+                ]
             }
         else:
             return {
                 "query": query,
-                "message": "Không tìm thấy biểu mẫu phù hợp."
+                "results": []
             }
     except Exception as e:
         logging.error(f"Lỗi trong quá trình tìm kiếm: {e}")
@@ -196,7 +173,7 @@ def top_k_search(query: str = Body(...), k: int = Body(...)):
         # Truy vấn PostgreSQL để lấy top-K kết quả tìm kiếm
         cursor.execute("""
             SELECT title, content
-            FROM froms
+            FROM forms
             ORDER BY embedding <=> %s::vector  -- So sánh vector
             LIMIT %s;
         """, (query_embedding, k))  # Truyền vào query_embedding dưới dạng list và k

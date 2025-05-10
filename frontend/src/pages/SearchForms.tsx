@@ -108,6 +108,8 @@ export default function SearchForms() {
     return () => clearTimeout(id);
   }, [searchQuery]);
 
+
+
   return (
     <div className="flex flex-col items-center bg-[#fafbfc] text-gray-900">
       <div className="w-full flex flex-col items-center pt-12 pb-4">
