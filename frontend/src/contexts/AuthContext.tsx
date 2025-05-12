@@ -77,7 +77,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(false);
     setUser(null);
     localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userId');    
+    localStorage.removeItem('userId');  
+    window.location.reload();  
   };
 
   React.useEffect(() => {

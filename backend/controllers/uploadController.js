@@ -1,99 +1,138 @@
-const pool = require('../db');      //Kết nối POSTGRESQL qua pool
-const path = require('path');       //Đường dẫn file
-const fs = require('fs');           //Phương thức thao tác hệ thống của nodejs
-const axios = require('axios');     //Http request
-const mammoth = require('mammoth'); //Trích xuất văn bản docx
-const pdf = require('pdf-parse');   //Trích xuất văn bản pdf
+const pool = require('../db');
+const path = require('path');
+const fs = require('fs');
+const axios = require('axios');
+const mammoth = require('mammoth');
+const pdf = require('pdf-parse');
+const { exec } = require('child_process');
 
-
-const MAX_TEXT_LENGTH = 20000;   //Giới hạn độ dài văn bản upload
+const MAX_TEXT_LENGTH = 20000;
 const EMBEDDING_API = process.env.EMBEDDING_API;
 
+// ⚙️ Chuyển file .docx sang .pdf bằng LibreOffice
+const convertDocxToPdf = (inputPath, outputDir) => {
+  return new Promise((resolve, reject) => {
+    const command = `libreoffice --headless --convert-to pdf --outdir "${outputDir}" "${inputPath}"`;
+    exec(command, (error, stdout, stderr) => {
+      if (error) return reject(stderr);
+      resolve(stdout);
+    });
+  });
+};
 
-
+// 📥 Trích xuất nội dung từ file
 const extractTextFromFile = async (filePath) => {
-    const ext = path.extname(filePath).toLowerCase();     //Lấy phần mở rộng của file
-    const buffer = await fs.promises.readFile(filePath); //Đọc file bằng Buffer
-  
-    try {
-      if (ext === '.docx') {
-        const result = await mammoth.extractRawText({ buffer }); // Trích xuất văn bản từ file DOCX.
-        return result.value;
-      } else if (ext === '.pdf') {
-        const result = await pdf(buffer); // Trích xuất văn bản từ file PDF.
-        return result.text; 
-      } else {
-        throw new Error('Unsupported file type'); //Lỗi upload file ko phù hợp
-      }
-    } catch (err) {
-      throw new Error(`Error extracting file content: ${err.message}`); // Bắt lỗi khi không trích xuất được file
+  const ext = path.extname(filePath).toLowerCase();
+  const buffer = await fs.promises.readFile(filePath);
+
+  try {
+    if (ext === '.docx') {
+      const result = await mammoth.extractRawText({ buffer });
+      return result.value;
+    } else if (ext === '.pdf') {
+      const result = await pdf(buffer);
+      return result.text;
+    } else {
+      throw new Error('Unsupported file type');
     }
-  };
-  
-  
-  // Upload form
-  const uploadForm = async (req, res) => {
-    try {
-     
-        const files = req.files;
-        if (!files || files.length === 0) {
-            return res.status(400).json({ error: 'No file uploaded' });  // Kiểm tra file đã được upload hay chưa
-        } 
-  
-      const insertedForms = [];
+  } catch (err) {
+    throw new Error(`Error extracting file content: ${err.message}`);
+  }
+};
 
-      for (const file of files) {
-        const filePath = file.path; // Lấy đường dẫn file đã upload.
-        const title = file.originalname;  
-  
-      const content = await extractTextFromFile(filePath); // Trích xuất nội dung từ file.
+// 🚀 Upload handler
+const uploadForm = async (req, res) => {
+  try {
+    const files = req.files;
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
 
-      if (!content || content.trim() === "") {
-        return res.status(400).json({ error: 'Không thể trích xuất nội dung từ file. File có thể bị lỗi hoặc rỗng.' });
+    const insertedForms = [];
+
+    for (const file of files) {
+      const originalName = file.originalname; // giữ nguyên tên gốc
+      const ext = path.extname(originalName).toLowerCase();
+      const uploadPath = file.path;
+      const uploadDir = path.dirname(uploadPath);
+      let savedFileName = path.basename(uploadPath);
+
+      let content;
+      try {
+        content = await extractTextFromFile(uploadPath);
+        if (!content || content.trim() === "") {
+          fs.unlinkSync(uploadPath);
+          return res.status(400).json({ error: 'Không thể trích xuất nội dung từ file.' });
+        }
+      } catch (err) {
+        fs.unlinkSync(uploadPath);
+        return res.status(400).json({ error: err.message });
       }
 
-       const truncated = content.slice(0, MAX_TEXT_LENGTH); // Cắt nội dung để đảm bảo không quá 20000 ký tự.
-  
+      const truncated = content.slice(0, MAX_TEXT_LENGTH);
+
+      // Gọi embedding API
       let embed;
       try {
         embed = await axios.post(
           EMBEDDING_API,
-          truncated,  
+          truncated,
           { headers: { 'Content-Type': 'application/json' } }
         );
-        
       } catch (e) {
-        return res.status(500).json({ error: 'Failed to connect to embedding API', details: e.message }); //Thông báo lỗi kết nối không thành công.
+        fs.unlinkSync(uploadPath);
+        return res.status(500).json({ error: 'Failed to connect to embedding API', details: e.message });
       }
-  
-      if (!embed.data || !Array.isArray(embed.data.embedding)) { // Kiểm tra phản hồi từ API embedding.
-        return res.status(500).json({ error: 'Invalid embedding response' }); //Thông báo lỗi không có embedding hợp lệ.
+
+      if (!embed.data || !Array.isArray(embed.data.embedding)) {
+        fs.unlinkSync(uploadPath);
+        return res.status(500).json({ error: 'Invalid embedding response' });
       }
-  
-      const vector = JSON.stringify(embed.data.embedding); // Chuyển embedding thành chuỗi JSON.
-  
-      // Lưu vào cơ sở dữ liệu PostgreSQL.
+
+      const vector = JSON.stringify(embed.data.embedding);
+
+         //Đổi tên đuôi .dox thành .pdf
+      const title = ext === '.docx'
+      ? originalName.replace(/\.docx$/i, '.pdf')
+      : originalName;
+
+      if (ext === '.docx') {
+        try {
+          await convertDocxToPdf(uploadPath, uploadDir);
+          const pdfFileName = savedFileName.replace('.docx', '.pdf');
+          const convertedPdfPath = path.join(uploadDir, pdfFileName);
+        
+          if (fs.existsSync(convertedPdfPath)) {
+            savedFileName = pdfFileName;
+            fs.unlinkSync(uploadPath); // xoá .docx gốc
+          } else {
+            fs.unlinkSync(uploadPath);
+            return res.status(500).json({ error: 'Không thể chuyển đổi DOCX sang PDF' });
+          }
+        } catch (convertErr) {
+          if (fs.existsSync(uploadPath)) fs.unlinkSync(uploadPath); // xoá .docx nếu lỗi
+          return res.status(500).json({
+            error: 'Lỗi khi chuyển đổi file DOCX',
+            details: convertErr.message
+          });
+        }
+      }
+   
+    
       const result = await pool.query(
         'INSERT INTO forms (title, file_path, content, embedding) VALUES ($1, $2, $3, $4::vector) RETURNING *',
-        [title, filePath, truncated, vector]
+        [title, savedFileName, truncated, vector]
       );
 
       insertedForms.push(result.rows[0]);
-  
-      // Xóa file đã upload sau khi lưu vào DB.
-      fs.unlink(filePath, (err) => {
-        if (err) console.warn('Could not delete uploaded file:', err.message);
-      });
-           
     }
-      // Trả về thông báo thành công.
-      res.status(201).json({ message: 'Uploaded', forms: insertedForms });
 
-    } catch (err) {
-      console.error('Upload error:', err);
-      res.status(500).json({ error: 'Upload failed', details: err.message });
-    }
-  };
+    res.status(201).json({ message: 'Uploaded', forms: insertedForms });
 
+  } catch (err) {
+    console.error('Upload error:', err);
+    res.status(500).json({ error: 'Upload failed', details: err.message });
+  }
+};
 
-  module.exports = { uploadForm};
+module.exports = { uploadForm };

@@ -401,3 +401,101 @@ LINE 3:             FROM froms
 2025-05-10 14:37:14,988 - INFO - Query embedding: [-8.5812639e-03 -3.4078255e-02  3.5385380e-03 -9.6632655e-05
   2.2627485e-03 -1.9360527e-02 -3.8872540e-02 -1.1394650e-02
   4.0264647e-02 -4.7683781e-03]
+2025-05-10 15:03:50,773 - INFO - 🔍 Đang tìm kiếm với truy vấn: lý lịch
+2025-05-10 15:03:51,069 - INFO - Query embedding: [-0.01856828  0.04683721  0.01385444  0.02048498 -0.0161213   0.0077285
+  0.02166358 -0.01622082  0.01213117 -0.00691393]
+2025-05-10 15:04:16,133 - INFO - 🔍 Đang tìm kiếm với truy vấn: lý lịch
+2025-05-10 15:04:16,203 - INFO - Query embedding: [-0.01856828  0.04683721  0.01385444  0.02048498 -0.0161213   0.0077285
+  0.02166358 -0.01622082  0.01213117 -0.00691393]
+2025-05-10 15:06:14,132 - INFO - 🔍 Đang tìm kiếm với truy vấn: lý
+2025-05-10 15:06:14,190 - INFO - Query embedding: [ 0.00179142  0.06246729 -0.01236554  0.02799285  0.00269861  0.02565898
+  0.00754047  0.00812914  0.01442077  0.05312483]
+2025-05-10 15:09:04,554 - INFO - 🔍 Đang tìm kiếm với truy vấn: T
+2025-05-10 15:09:04,599 - INFO - Query embedding: [-0.02361834 -0.06379012 -0.0413783   0.02691235  0.00855618  0.01800406
+ -0.03804645  0.039386   -0.04607669  0.05150254]
+2025-05-10 15:09:27,888 - INFO - 🔍 Đang tìm kiếm với truy vấn: Thông tin sinh viên
+2025-05-10 15:09:28,008 - INFO - Query embedding: [-0.00094448 -0.05112812  0.01162448 -0.00113619 -0.02021316  0.00256161
+ -0.01999704 -0.02308377  0.04960421 -0.00925827]
+2025-05-10 15:12:44,810 - INFO - 🔍 Đang tìm kiếm với truy vấn: Thông tin sinh viên
+2025-05-10 15:12:44,870 - INFO - Query embedding: [-0.00094448 -0.05112812  0.01162448 -0.00113619 -0.02021316  0.00256161
+ -0.01999704 -0.02308377  0.04960421 -0.00925827]
+2025-05-10 15:12:50,475 - INFO - 🔍 Đang tìm kiếm với truy vấn: nghỉ học
+2025-05-10 15:12:50,523 - INFO - Query embedding: [-8.5812639e-03 -3.4078255e-02  3.5385380e-03 -9.6632655e-05
+  2.2627485e-03 -1.9360527e-02 -3.8872540e-02 -1.1394650e-02
+  4.0264647e-02 -4.7683781e-03]
+2025-05-12 05:46:23,794 - INFO - Use pytorch device_name: cpu
+2025-05-12 05:46:23,795 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 05:56:08,991 - INFO - Use pytorch device_name: cpu
+2025-05-12 05:56:08,992 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 07:01:51,747 - INFO - Use pytorch device_name: cpu
+2025-05-12 07:01:51,747 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 09:14:10,618 - INFO - Use pytorch device_name: cpu
+2025-05-12 09:14:10,619 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 09:17:53,092 - INFO - Use pytorch device_name: cpu
+2025-05-12 09:17:53,093 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 09:22:14,978 - INFO - Use pytorch device_name: cpu
+2025-05-12 09:22:14,978 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 09:31:39,393 - INFO - Use pytorch device_name: cpu
+2025-05-12 09:31:39,393 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 09:33:54,683 - INFO - Use pytorch device_name: cpu
+2025-05-12 09:33:54,684 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 09:40:23,848 - INFO - Use pytorch device_name: cpu
+2025-05-12 09:40:23,849 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 09:45:06,986 - INFO - Use pytorch device_name: cpu
+2025-05-12 09:45:06,986 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 09:52:30,018 - INFO - Use pytorch device_name: cpu
+2025-05-12 09:52:30,018 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 10:00:11,785 - INFO - Use pytorch device_name: cpu
+2025-05-12 10:00:11,785 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 10:13:15,887 - INFO - Use pytorch device_name: cpu
+2025-05-12 10:13:15,887 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 10:38:01,187 - INFO - Use pytorch device_name: cpu
+2025-05-12 10:38:01,187 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 10:46:06,397 - INFO - Use pytorch device_name: cpu
+2025-05-12 10:46:06,397 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 10:48:31,436 - INFO - Use pytorch device_name: cpu
+2025-05-12 10:48:31,436 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 10:59:52,609 - INFO - Use pytorch device_name: cpu
+2025-05-12 10:59:52,609 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 11:09:28,961 - INFO - Use pytorch device_name: cpu
+2025-05-12 11:09:28,962 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 11:24:15,906 - INFO - Use pytorch device_name: cpu
+2025-05-12 11:24:15,906 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 11:34:59,648 - INFO - Use pytorch device_name: cpu
+2025-05-12 11:34:59,648 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 11:41:04,794 - INFO - Use pytorch device_name: cpu
+2025-05-12 11:41:04,795 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 11:51:05,831 - INFO - Use pytorch device_name: cpu
+2025-05-12 11:51:05,832 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 11:53:02,870 - INFO - Use pytorch device_name: cpu
+2025-05-12 11:53:02,871 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 11:57:45,607 - INFO - Use pytorch device_name: cpu
+2025-05-12 11:57:45,608 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 12:17:41,410 - INFO - Use pytorch device_name: cpu
+2025-05-12 12:17:41,411 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 12:44:56,480 - INFO - Use pytorch device_name: cpu
+2025-05-12 12:44:56,480 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 14:07:44,813 - INFO - Use pytorch device_name: cpu
+2025-05-12 14:07:44,813 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 14:12:12,016 - INFO - Use pytorch device_name: cpu
+2025-05-12 14:12:12,016 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 14:20:44,947 - INFO - Use pytorch device_name: cpu
+2025-05-12 14:20:44,948 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 14:28:06,015 - INFO - Use pytorch device_name: cpu
+2025-05-12 14:28:06,015 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 14:37:32,368 - INFO - Use pytorch device_name: cpu
+2025-05-12 14:37:32,369 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 15:21:58,828 - INFO - Use pytorch device_name: cpu
+2025-05-12 15:21:58,829 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 15:26:03,798 - INFO - Use pytorch device_name: cpu
+2025-05-12 15:26:03,799 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 15:32:16,089 - INFO - Use pytorch device_name: cpu
+2025-05-12 15:32:16,089 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 15:36:30,210 - INFO - Use pytorch device_name: cpu
+2025-05-12 15:36:30,210 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 15:42:30,265 - INFO - Use pytorch device_name: cpu
+2025-05-12 15:42:30,265 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 15:46:10,597 - INFO - Use pytorch device_name: cpu
+2025-05-12 15:46:10,597 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 15:51:35,352 - INFO - Use pytorch device_name: cpu
+2025-05-12 15:51:35,352 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2

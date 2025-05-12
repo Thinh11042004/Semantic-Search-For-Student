@@ -56,14 +56,14 @@ const Login: FC = () => {
 
       const data = await response.json();
 
-      if (response.ok && data.id) {   // kiểm tra có id là thành công
+      if (response.ok && data.id) {
+        localStorage.setItem("user", JSON.stringify(data)); // ✅ lưu thông tin user
         await login(email, password);
-    
-         // ✅ Ghi activity đăng nhập
-    await logActivity(data.id, 'Login', 'Đăng nhập thành công');
-    
+        await logActivity(data.id, 'Login', 'Đăng nhập thành công');
         navigate('/search-forms', { state: { user: data } });
-    } else {
+      }
+      
+     else {
         setError(data.message || 'Email hoặc mật khẩu không đúng');
     }
       

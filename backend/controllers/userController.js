@@ -92,8 +92,25 @@ const getUserById = async (req, res) => {
 };
 
 
+const UpdateInformation = async (req, res) => {
+  const { name, email, phone_Number } = req.body;
+  const id = req.params.id;
+
+  try {
+    await pool.query(
+      'UPDATE users SET name = $1, email = $2, phone_number = $3 WHERE id = $4',
+      [name, email, phone_Number, id]
+    );
+    res.json({ message: 'Cập nhật thành công' });
+  } catch (err) {
+    console.error('Lỗi khi cập nhật:', err);
+    res.status(500).json({ error: 'Lỗi máy chủ' });
+  }
+};
+
 module.exports = {
   registerUser,
   getUserById,
-  loginUser 
+  loginUser,
+  UpdateInformation
 };

@@ -1,23 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // Import useNavigate để điều hướng
+import { useNavigate } from 'react-router-dom';
 import { logActivity } from '../components/activityLogger';
 
-// Các icon cho file DOCX và PDF
-const WordIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
-    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#4285F4" />
-    <path d="M14 2v6h6" fill="#AECBFA" />
-    <path d="M16 13H8v-2h8v2zm0 4H8v-2h8v2z" fill="#ffffff" />
-  </svg>
-);
-
 const PDFIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
-    <path d="M20 2H8a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2z" fill="#FF5722" />
-    <path d="M4 6v14a2 2 0 002 2h14" stroke="#FF5722" strokeWidth="2" />
-    <path d="M10.5 11.5h-.8v2.4h.8c.8 0 1.3-.5 1.3-1.2s-.5-1.2-1.3-1.2zM14.7 11.5h1.4v.9h-1.4v.8h1.6v.9h-2.5v-3.8h2.6v.9h-1.7v.3z" fill="#ffffff" />
-    <path d="M10.5 10.6c1.2 0 2.2.7 2.2 2.1 0 1.4-.9 2.1-2.2 2.1h-1.7v-4.2h1.7zM9.7 14.8h.8c1.2 0 2.2-.7 2.2-2.1 0-1.4-1-2.1-2.2-2.1h-1.7v4.2h.9z" fill="#ffffff" />
-    <path d="M9 9h2.3c1.5 0 2.7 1 2.7 2.9 0 1.9-1.2 2.9-2.7 2.9H9V9z" fill="#ffffff" />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-10 h-10">
+    <path fill="#FF5722" d="M20 2H8a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2z" />
+    <path stroke="#FF5722" strokeWidth="2" d="M4 6v14a2 2 0 002 2h14" />
+    <path fill="#fff" d="M10.5 11.5h-.8v2.4h.8c.8 0 1.3-.5 1.3-1.2s-.5-1.2-1.3-1.2zM14.7 11.5h1.4v.9h-1.4v.8h1.6v.9h-2.5v-3.8h2.6v.9h-1.7v.3z" />
+    <path fill="#fff" d="M10.5 10.6c1.2 0 2.2.7 2.2 2.1 0 1.4-.9 2.1-2.2 2.1h-1.7v-4.2h1.7z" />
   </svg>
 );
 
@@ -30,19 +20,17 @@ interface Form {
 }
 
 export default function SearchForms() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [forms, setForms] = useState<Form[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [debounceId, setDebounceId] = useState<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
 
-  // Load form theo page mặc định
   const loadForms = (pageNum = 1) => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/forms/page?page=${pageNum}&limit=8`)
+    fetch(`http://localhost:5000/api/forms/page?page=${pageNum}&limit=5`)
       .then(res => res.json())
       .then(data => {
         setForms(data.forms);
@@ -53,20 +41,15 @@ export default function SearchForms() {
       .finally(() => setLoading(false));
   };
 
-  // Khi mới vào trang, load page đầu tiên
   useEffect(() => {
-    if (!isSearching) {
-      loadForms(page);
-    }
+    if (!isSearching) loadForms(page);
   }, [page]);
 
-  // Xử lý tìm kiếm khi bấm nút hoặc Enter
   const handleSearch = () => {
     if (searchQuery.trim() === "") {
       loadForms(1);
       return;
     }
-
     setLoading(true);
     fetch(`http://localhost:5000/api/search?query=${encodeURIComponent(searchQuery)}`)
       .then(res => res.json())
@@ -74,41 +57,18 @@ export default function SearchForms() {
         setForms(data.results || []);
         setTotalPages(1);
         setIsSearching(true);
-
         const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
         if (userId) {
-            logActivity(userId, 'search', `Tìm kiếm với từ khóa: ${searchQuery}`);
+          logActivity(userId, 'search', `Tìm kiếm với từ khóa: ${searchQuery}`);
         }
       })
       .catch(err => console.error("Lỗi tìm kiếm:", err))
       .finally(() => setLoading(false));
   };
 
-  // Xử lý nhấn Enter trong ô tìm kiếm
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
+  const goToPage = (pageNum: number) => {
+    if (pageNum >= 1 && pageNum <= totalPages) setPage(pageNum);
   };
-
-  // Khi người dùng gõ vào input (debounce 0.5 giây)
-  useEffect(() => {
-    if (debounceId) clearTimeout(debounceId);
-
-    const id = setTimeout(() => {
-      if (searchQuery.trim() !== "") {
-        handleSearch();
-      } else {
-        loadForms(1);
-      }
-    }, 500);
-
-    setDebounceId(id);
-
-    return () => clearTimeout(id);
-  }, [searchQuery]);
-
-
 
   return (
     <div className="flex flex-col items-center bg-[#fafbfc] text-gray-900">
@@ -126,7 +86,6 @@ export default function SearchForms() {
             className="flex-1 bg-transparent outline-none text-lg placeholder-gray-400"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
           />
           <button
             onClick={handleSearch}
@@ -140,63 +99,76 @@ export default function SearchForms() {
         </div>
       </div>
 
-      {loading && (
-        <p className="text-gray-500 mb-4">Đang tải dữ liệu...</p>
-      )}
-
-      {/* Results */}
-      <div className="w-full max-w-5xl px-4 mb-8">
-        {forms.length === 0 && !loading ? (
-          <p className="text-center text-gray-500">Không tìm thấy biểu mẫu nào.</p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {forms.map((form) => {
-              let icon;
-              const lowerTitle = form.title.toLowerCase();
-              if (lowerTitle.endsWith(".docx")) {
-                icon = <WordIcon />;
-              } else if (lowerTitle.endsWith(".pdf")) {
-                icon = <PDFIcon />;
-              }
-
-              return (
-                <div
-                  key={form.id}
-                  className="flex gap-4 items-center bg-gray-200 rounded-lg p-4 shadow hover:shadow-md transition-shadow"
-                  onClick={() => navigate(`/open-file/${form.id}`)}  // Điều hướng khi nhấn vào file
-                >
-                  <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-lg">
-                    {icon}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-lg">{form.title}</span>
-                    <p className="text-sm text-gray-500">{new Date(form.created_at).toLocaleDateString()}</p>
-                  </div>
-                </div>
-              );
-            })}
+      <div className="w-full max-w-xl mt-8 space-y-4">
+        {forms.map(form => (
+          <div
+            key={form.id}
+            className="flex items-center justify-between px-4 py-2 bg-white rounded shadow hover:bg-gray-50 cursor-pointer"
+            onClick={() => navigate(`/open-file/${form.id}`)}
+          >
+            <div className="flex items-center space-x-4">
+              <PDFIcon />
+              <div>
+                <p className="font-semibold">{form.title}</p>
+                <p className="text-sm text-gray-500">{new Date(form.created_at).toLocaleDateString()}</p>
+              </div>
+            </div>
           </div>
-        )}
+        ))}
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-center items-center gap-4 mt-6">
-        <button
-          onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-          disabled={page === 1}
-          className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-50"
-        >
-          Trang trước
-        </button>
-        <span>Trang {page} / {totalPages}</span>
-        <button
-          onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-          disabled={page === totalPages}
-          className="px-4 py-2 bg-[#1976d2] text-gray-200 rounded disabled:opacity-50"
-        >
-          Trang sau
-        </button>
-      </div>
+      {/* Custom Pagination */}
+      <div className="mt-10 flex justify-center items-center gap-2 bg-white py-2 px-6 rounded-full shadow-md">
+  <button
+    onClick={() => goToPage(page - 1)}
+    disabled={page === 1}
+    className="px-4 py-2 text-sm rounded bg-[#1976d2] text-white disabled:opacity-50"
+  >
+    &lt; prev
+  </button>
+
+  {[...Array(totalPages)].map((_, idx) => {
+    const p = idx + 1;
+    const isActive = p === page;
+    return (
+      <button
+        key={p}
+        onClick={() => goToPage(p)}
+        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
+          ${isActive ? 'bg-[#1976d2] text-white' : 'bg-white text-[#1976d2] border border-[#1976d2] hover:bg-[#e3f2fd]'}`}
+      >
+        {p}
+      </button>
+    );
+  })}
+
+  <button
+    onClick={() => goToPage(page + 1)}
+    disabled={page === totalPages}
+    className="px-4 py-2 text-sm rounded bg-[#1976d2] text-white disabled:opacity-50"
+  >
+    next &gt;
+  </button>
+</div>
+
+
+      <footer className="bg-[#0d47a1] w-full mt-12 text-white py-6">
+        <div className="max-w-6xl mx-auto flex justify-between px-4">
+          <div>
+            <h3 className="text-lg font-semibold">HUTECH Search</h3>
+            <p className="text-sm text-blue-200">Our AI-powered search engine transforms how you search through documents with advanced semantic understanding.</p>
+          </div>
+          <div className="space-y-1 text-sm">
+            <p>Search</p>
+            <p>Product</p>
+            <p>About</p>
+            <p>Help</p>
+            <p>Contact</p>
+            <p>Privacy</p>
+          </div>
+        </div>
+        <div className="text-center mt-4 text-xs text-blue-100">© 2025 HUTECH University</div>
+      </footer>
     </div>
   );
 }

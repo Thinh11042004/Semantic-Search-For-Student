@@ -1,50 +1,51 @@
 const express = require('express');
+const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 
-const { getFormById ,getEmbedding, getFormsByPage } = require('../controllers/getFormController');
+// Controllers
+const {
+  getFormById,
+  getEmbedding,
+  getFormsByPage
+} = require('../controllers/getFormController');
 const { uploadForm } = require('../controllers/uploadController');
 const { searchForms } = require('../controllers/searchFormController');
+const {
+  logUploadOrDelete,
+  getUploadLogs,
+  deleteFiles,
+  logDownload,
+  getDownloadHistory
+} = require('../controllers/historyController');
 
-const router = express.Router();
-
-// Tạo thư mục uploads nếu chưa tồn tại
-const uploadDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-// Cấu hình multer để lưu trữ file
+// Cấu hình lưu file với Multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, uploadDir);
+    cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
   }
 });
+const upload = multer({ storage });
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['.pdf', '.docx', '.xlsx'];
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (!allowedTypes.includes(ext)) {
-      return cb(new Error('Only PDF, DOCX, XLSX files are allowed'));
-    }
-    cb(null, true);
-  }
-});
+// ========== ROUTES ==========
 
-// Routes
+// --- FORM FUNCTIONALITY --- //
 router.post('/upload', upload.array('form'), uploadForm);
-router.post('/get-embedding', getEmbedding);
-
-
-router.get('/search', searchForms);
 router.get('/forms/page', getFormsByPage);
+router.get('/search', searchForms);
 router.get('/form/:id', getFormById);
+
+// --- HISTORY / LOG --- //
+router.post('/history/uploads', logUploadOrDelete);             // Ghi log upload/delete
+router.get('/history/uploads', getUploadLogs);                  // Lấy toàn bộ lịch sử upload/delete (admin)
+router.post('/history/uploads/delete', deleteFiles);            // Xóa nhiều file + log
+
+router.post('/history/downloads', logDownload);                 // ✅ Ghi log khi tải file (user)
+router.post('/history/downloads/user', getDownloadHistory);     // ✅ Lấy lịch sử tải file theo user
+
 
 module.exports = router;

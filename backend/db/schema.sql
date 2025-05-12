@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
+    phone_Number INT,
     password TEXT NOT NULL,
     role TEXT DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -26,6 +27,18 @@ CREATE TABLE activities (
     description TEXT,      
     time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+
+CREATE TABLE upload_logs (
+  id SERIAL PRIMARY KEY,
+  filename TEXT,
+  user_id INT REFERENCES users(id),
+  status TEXT CHECK (status IN ('upload', 'delete')),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+
 
 
 

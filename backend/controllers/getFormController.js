@@ -1,6 +1,5 @@
 const pool = require('../db');      //Kết nối POSTGRESQL qua pool
 const path = require('path');       //Đường dẫn file
-const fs = require('fs');           //Phương thức thao tác hệ thống của nodejs
 const axios = require('axios');     //Http request
 
 
@@ -16,30 +15,38 @@ const getForms = async (req, res) => {
 
 
   // Lấy forms theo phân trang
-const getFormsByPage = async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 8;
-  const offset = (page - 1) * limit;
+  const getFormsByPage = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const offset = (page - 1) * limit;
+  
+    try {
+      const countResult = await pool.query('SELECT COUNT(*) FROM forms');
+      const totalForms = parseInt(countResult.rows[0].count);
+      const totalPages = Math.ceil(totalForms / limit);
+  
+      const result = await pool.query(
+        'SELECT * FROM forms ORDER BY id DESC LIMIT $1 OFFSET $2',
+        [limit, offset]
+      );
+  
+      const host = req.protocol + '://' + req.get('host');
+      const formsWithFilePath = result.rows.map(form => ({
+        ...form,
+        filePath: `${req.protocol}://${req.get('host')}/uploads/${form.file_path}`
 
-  try {
-    const countResult = await pool.query('SELECT COUNT(*) FROM forms');
-    const totalForms = parseInt(countResult.rows[0].count);
-    const totalPages = Math.ceil(totalForms / limit);
-
-    const result = await pool.query(
-      'SELECT * FROM forms ORDER BY id DESC LIMIT $1 OFFSET $2',
-      [limit, offset]
-    );
-
-    res.json({
-      forms: result.rows,
-      totalPages,
-    });
-  } catch (error) {
-    console.error('Error fetching paginated forms:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
+      }));
+  
+      res.json({
+        forms: formsWithFilePath,
+        totalPages,
+      });
+    } catch (error) {
+      console.error('Error fetching paginated forms:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  
 
 const getEmbedding = async (req, res) => {
   try {
@@ -75,18 +82,22 @@ const getFormById = async (req, res) => {
     }
 
     const file = result.rows[0];  // Lấy thông tin file từ cơ sở dữ liệu
+
+    // Tạo đường dẫn đầy đủ đến file
+    const host = req.protocol + '://' + req.get('host'); // http://localhost:5000
+    const filePath = `${req.protocol}://${req.get('host')}/uploads/${file.file_path}`;
+
+
     res.json({
       title: file.title,
-      content: file.content,  // Nội dung của file
-      filePath: file.file_path  // Đường dẫn file (dùng để tải về)
+      content: file.content, 
+      filePath: filePath  
     });
   } catch (err) {
     console.error('Error fetching file:', err);
     res.status(500).json({ error: 'Failed to fetch file' });
   }
 };
-
-
 
 
   module.exports = { 
