@@ -499,3 +499,52 @@ LINE 3:             FROM froms
 2025-05-12 15:46:10,597 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
 2025-05-12 15:51:35,352 - INFO - Use pytorch device_name: cpu
 2025-05-12 15:51:35,352 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-12 16:09:45,962 - INFO - Use pytorch device_name: cpu
+2025-05-12 16:09:45,963 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 07:49:33,660 - INFO - Use pytorch device_name: cpu
+2025-05-13 07:49:33,661 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 07:54:22,889 - INFO - 🔍 Đang tìm kiếm với truy vấn: phieu
+2025-05-13 07:54:22,965 - INFO - Query embedding: [-0.00093645 -0.02954974  0.01250133 -0.00086564  0.01659305  0.0274462
+ -0.0310617  -0.01539932  0.0273836  -0.01197818]
+2025-05-13 07:54:23,016 - INFO - 🔍 Đang tìm kiếm với truy vấn: phieu
+2025-05-13 07:54:23,062 - INFO - Query embedding: [-0.00093645 -0.02954974  0.01250133 -0.00086564  0.01659305  0.0274462
+ -0.0310617  -0.01539932  0.0273836  -0.01197818]
+2025-05-13 07:54:23,149 - INFO - 🔍 Đang tìm kiếm với truy vấn: phieu
+2025-05-13 07:54:23,198 - INFO - Query embedding: [-0.00093645 -0.02954974  0.01250133 -0.00086564  0.01659305  0.0274462
+ -0.0310617  -0.01539932  0.0273836  -0.01197818]
+2025-05-13 07:54:23,270 - INFO - 🔍 Đang tìm kiếm với truy vấn: phieu
+2025-05-13 07:54:23,320 - INFO - Query embedding: [-0.00093645 -0.02954974  0.01250133 -0.00086564  0.01659305  0.0274462
+ -0.0310617  -0.01539932  0.0273836  -0.01197818]
+2025-05-13 07:54:23,493 - INFO - 🔍 Đang tìm kiếm với truy vấn: phieu
+2025-05-13 07:54:23,547 - INFO - Query embedding: [-0.00093645 -0.02954974  0.01250133 -0.00086564  0.01659305  0.0274462
+ -0.0310617  -0.01539932  0.0273836  -0.01197818]
+2025-05-13 10:01:26,827 - INFO - Use pytorch device_name: cpu
+2025-05-13 10:01:26,827 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 10:24:10,860 - INFO - Use pytorch device_name: cpu
+2025-05-13 10:24:10,861 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 12:05:04,537 - INFO - Use pytorch device_name: cpu
+2025-05-13 12:05:04,537 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 13:43:51,797 - INFO - Use pytorch device_name: cpu
+2025-05-13 13:43:51,798 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 13:44:23,713 - INFO - Use pytorch device_name: cpu
+2025-05-13 13:44:23,713 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 14:47:06,470 - INFO - Use pytorch device_name: cpu
+2025-05-13 14:47:06,471 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 14:50:43,645 - INFO - Use pytorch device_name: cpu
+2025-05-13 14:50:43,645 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 14:55:37,446 - INFO - Use pytorch device_name: cpu
+2025-05-13 14:55:37,446 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 15:05:29,408 - INFO - Use pytorch device_name: cpu
+2025-05-13 15:05:29,409 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 15:40:54,516 - INFO - Use pytorch device_name: cpu
+2025-05-13 15:40:54,516 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 15:45:18,757 - INFO - Use pytorch device_name: cpu
+2025-05-13 15:45:18,757 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 15:49:57,204 - INFO - Use pytorch device_name: cpu
+2025-05-13 15:49:57,205 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 15:58:06,522 - INFO - Use pytorch device_name: cpu
+2025-05-13 15:58:06,523 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 16:01:58,207 - INFO - Use pytorch device_name: cpu
+2025-05-13 16:01:58,207 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 16:06:38,714 - INFO - Use pytorch device_name: cpu
+2025-05-13 16:06:38,714 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2

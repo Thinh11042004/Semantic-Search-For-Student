@@ -1,53 +1,32 @@
-import React, { useState } from "react";
-import { Card, CardContent } from "../components/ui/card";
+import * as React from 'react';
+import MainLayout from '../components/Layout/MainLayout';
+import PageContainer from '../components/Layout/PageContainer';
 
-const fileTypes = [
-  { name: "WordPress", icon: "https://img.icons8.com/ios-filled/50/wordpress.png" },
-  { name: "Excel", icon: "https://img.icons8.com/ios-filled/50/ms-excel.png" },
-  { name: "Document", icon: "https://img.icons8.com/ios-filled/50/document.png" },
-  { name: "PDF", icon: "https://img.icons8.com/ios-filled/50/pdf.png" },
-  { name: "PowerPoint", icon: "https://img.icons8.com/ios-filled/50/ms-powerpoint.png" },
-  { name: "Exe", icon: "https://img.icons8.com/ios-filled/50/installer.png" },
-];
+const Product: React.FC = () => {
+  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-export default function Product() {
-  const [dragActive, setDragActive] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const filesArray = Array.from(event.target.files);
+      setSelectedFiles(prev => [...prev, ...filesArray]);
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files) {
-      addFilesToList(Array.from(e.dataTransfer.files));
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (event.dataTransfer.files) {
+      const filesArray = Array.from(event.dataTransfer.files);
+      setSelectedFiles(prev => [...prev, ...filesArray]);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      addFilesToList(Array.from(e.target.files));
-    }
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
   };
 
-  const addFilesToList = (files: File[]) => {
-    const newFiles = files.filter(file => 
-      !selectedFiles.some(f => f.name === file.name && f.size === file.size)
-    );
-    setSelectedFiles(prev => [...prev, ...newFiles]);
-  };
-
-  const removeFile = (fileName: string) => {
-    setSelectedFiles(prev => prev.filter(f => f.name !== fileName));
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleUploadAll = async () => {
@@ -57,19 +36,33 @@ export default function Product() {
     }
 
     const formData = new FormData();
-    selectedFiles.forEach(file => {
-      formData.append('form', file);  
-    });
+    selectedFiles.forEach(file => formData.append('form', file));
+
     try {
-      const response = await fetch('http://localhost:5000/api/upload', {
+      const response = await fetch('http://localhost:5000/api/forms/upload', {
         method: 'POST',
-        body: formData
+        body: formData,
       });
 
       const data = await response.json();
+
       if (response.ok) {
-        alert("Upload thành công: " + JSON.stringify(data));
-        setSelectedFiles([]);  // Xóa list sau khi upload
+        alert("Upload thành công!");
+        setSelectedFiles([]);
+
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        for (const uploaded of data.forms || []) {
+          await fetch('http://localhost:5000/api/history/uploads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              filename: uploaded.title,
+              status: 'upload',
+              user_id: user.id
+            })
+          });
+        }
       } else {
         alert("Upload thất bại: " + (data.error || "Lỗi không xác định"));
       }
@@ -80,82 +73,81 @@ export default function Product() {
   };
 
   return (
-    <div className="min-h-screen bg-pink-50 text-gray-800">
-      <main className="flex flex-col items-center px-4 py-12">
-        <h1 className="text-3xl font-bold mb-4">Upload & Process Your Files</h1>
-        <p className="text-gray-600 mb-4">
-          Upload your documents for intelligent processing and semantic search
-        </p>
-
-        {/* Khu vực kéo thả */}
-        <div
-          className={`w-full max-w-2xl h-64 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 flex flex-col items-center justify-center p-6 mb-4 ${
-            dragActive ? "border-[#005BAA] bg-blue-50" : ""
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 border-2 border-dashed border-[#005BAA] rounded-lg flex items-center justify-center">
-              <span className="text-[#005BAA] text-4xl">+</span>
-            </div>
-            <p className="text-gray-600 text-center">
-              Drag and drop your files here<br />or
+    <MainLayout>
+      <PageContainer>
+        <div className="flex flex-col items-center bg-[#fafbfc] text-gray-900">
+          <div className="w-full flex flex-col items-center pt-12 pb-4">
+            <h1 className="text-4xl font-bold mb-2 text-center">Upload & Process Your Files</h1>
+            <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl">
+              Upload your documents for intelligent processing and semantic search capabilities.
             </p>
-            <label className="cursor-pointer bg-[#005BAA] text-white px-6 py-2 rounded-md hover:bg-[#004080]">
-              Choose Files
-              <input
-                type="file"
-                className="hidden"
-                onChange={handleChange}
-                accept=".doc,.docx,.pdf,.xls,.xlsx,.ppt,.pptx,.exe,.txt"
-                multiple
-              />
-            </label>
           </div>
-        </div>
 
-        {/* Hiển thị danh sách file đã chọn */}
-        {selectedFiles.length > 0 && (
-          <div className="w-full max-w-3xl flex flex-col gap-2 mb-6">
-            {selectedFiles.map((file, index) => (
-              <div key={index} className="flex items-center justify-between bg-white px-4 py-2 rounded shadow-sm">
-                <span>{file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
-                <button 
-                  onClick={() => removeFile(file.name)} 
-                  className="bg-[#C0C0C0] text-red-500 text-sm rounded px-2"
-                >
-                  Xóa
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Nút upload */}
-        {selectedFiles.length > 0 && (
-          <button
-            onClick={handleUploadAll}
-            className="mb-8 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+          <div
+            className="w-full max-w-2x1 min-h-[12rem] max-h-[30rem]
+              bg-[#d2d3d4] border-2 border-dashed rounded-lg 
+              p-8 text-center bg-white 
+              shadow-md hover:shadow-lg transition-shadow 
+              flex flex-col gap-8 items-center justify-center"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
           >
-            Upload tất cả
-          </button>
-        )}
+            {selectedFiles.length > 0 && (
+              <div className="w-full max-h-48 overflow-y-auto flex flex-col gap-2">
+                {selectedFiles.map((file, index) => (
+                  <div key={index} className="flex justify-between bg-gray-100 px-4 py-2 rounded">
+                    <span className="truncate">{file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="bg-[#C0C0C0] text-red-500 text-sm rounded px-2"
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-        {/* Loại file */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 w-full max-w-4xl">
-          {fileTypes.map((type) => (
-            <Card key={type.name} className="p-6 bg-white hover:shadow-md transition-shadow">
-              <CardContent className="flex flex-col items-center gap-4">
-                <img src={type.icon} alt={type.name} className="h-12 w-12" />
-                <span className="font-medium">{type.name}</span>
-              </CardContent>
-            </Card>
-          ))}
+            {selectedFiles.length === 0 && (
+              <>
+                <div>
+                  <svg className="mx-auto w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                <p className="text-xl font-medium mb-4">Drag and drop your files here or</p>
+              </>
+            )}
+
+            {selectedFiles.length > 0 && (
+              <button
+                onClick={handleUploadAll}
+                className="mt-4 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+              >
+                Upload tất cả
+              </button>
+            )}
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              id="file-upload"
+              multiple
+            />
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-[#1976d2] text-white px-8 py-3 rounded hover:bg-[#1565c0] transition-colors font-medium"
+            >
+              Choose Files
+            </button>
+          </div>
         </div>
-      </main>
-    </div>
+      </PageContainer>
+    </MainLayout>
   );
-}
+};
+
+export default Product;

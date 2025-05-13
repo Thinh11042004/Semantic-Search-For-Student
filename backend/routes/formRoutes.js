@@ -19,7 +19,8 @@ const {
   getDownloadHistory
 } = require('../controllers/historyController');
 
-// Cấu hình lưu file với Multer
+
+// Multer config
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
@@ -31,21 +32,18 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ========== ROUTES ==========
-
-// --- FORM FUNCTIONALITY --- //
+// === FORM ===
 router.post('/upload', upload.array('form'), uploadForm);
-router.get('/forms/page', getFormsByPage);
+router.get('/page', getFormsByPage);
 router.get('/search', searchForms);
-router.get('/form/:id', getFormById);
+router.get('/:id', getFormById);
 
-// --- HISTORY / LOG --- //
-router.post('/history/uploads', logUploadOrDelete);             // Ghi log upload/delete
-router.get('/history/uploads', getUploadLogs);                  // Lấy toàn bộ lịch sử upload/delete (admin)
-router.post('/history/uploads/delete', deleteFiles);            // Xóa nhiều file + log
+// === HISTORY ===
+router.post('/uploads', logUploadOrDelete);
+router.get('/uploads', getUploadLogs);
+router.post('/uploads/delete', deleteFiles);
 
-router.post('/history/downloads', logDownload);                 // ✅ Ghi log khi tải file (user)
-router.post('/history/downloads/user', getDownloadHistory);     // ✅ Lấy lịch sử tải file theo user
-
+router.post('/downloads', logDownload);
+router.post('/downloads/user', getDownloadHistory);
 
 module.exports = router;

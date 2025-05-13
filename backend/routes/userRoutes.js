@@ -1,16 +1,34 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/userController');
-const { UpdateInformation}=require('../controllers/userController')
-const db = require('../db');
+const {
+  registerUser,
+  getUserById,
+  loginUser,
+  UpdateInformation,
+  forgotPassword,
+  verifyCode,
+  resetPassword
+} = require('../controllers/userController');
 
-router.post('/register', userController.registerUser);
-router.post('/login', userController.loginUser);
+const {
+  addActivity,
+  getActivitiesByUser
+} = require('../controllers/activityController');
 
 
-router.get('/:id', userController.getUserById);
+// Auth
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-code', verifyCode);
+router.post('/reset-password', resetPassword);
 
+// User Info
+router.get('/:id', getUserById);
+router.put('/:id', UpdateInformation);
 
-router.put('/users/:id', UpdateInformation);
+// Activity
+router.post('/activity', addActivity);
+router.get('/:user_id/activity', getActivitiesByUser);
 
 module.exports = router;

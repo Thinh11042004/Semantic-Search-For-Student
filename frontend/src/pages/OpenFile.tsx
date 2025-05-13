@@ -7,14 +7,14 @@ const OpenFile = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/form/${id}`)
+    fetch(`http://localhost:5000/api/forms/${id}`)
       .then((response) => response.json())
       .then((data) => {
         setFile(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Error fetching file:', err);
+        console.error('❌ Lỗi lấy file:', err);
         setLoading(false);
       });
   }, [id]);
@@ -23,7 +23,7 @@ const OpenFile = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const userId = user?.id;
 
-    if (!userId || !file?.title) return;
+    if (!userId || !file || !file.title) return;
 
     fetch('http://localhost:5000/api/history/downloads', {
       method: 'POST',

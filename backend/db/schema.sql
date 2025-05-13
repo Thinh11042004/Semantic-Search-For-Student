@@ -39,6 +39,20 @@ CREATE TABLE upload_logs (
 );
 
 
+CREATE TABLE download_logs (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  filename TEXT NOT NULL,
+  downloaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE password_resets (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  code TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
 
 
 

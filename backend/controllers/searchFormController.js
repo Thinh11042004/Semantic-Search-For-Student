@@ -36,7 +36,7 @@ const searchForms = async (req, res) => {
                 title: item.title,
                 file_path: item.file_path,
                 created_at: item.created_at || new Date(),
-            }))
+            })) 
         });
 
     } catch (err) {
