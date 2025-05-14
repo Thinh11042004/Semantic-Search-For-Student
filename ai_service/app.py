@@ -1,14 +1,16 @@
 import os
 import logging
-from fastapi import FastAPI, Body
-# from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Body, Query
 from sentence_transformers import SentenceTransformer
 import psycopg2
 from PyPDF2 import PdfReader
 import docx 
 from fastapi.responses import JSONResponse
 from typing import Union, List
-# from pydantic import BaseModel
+import numpy as np
+import logging
+import re
+
 
 # Tạo thư mục logs nếu chưa có
 if not os.path.exists("logs"):
@@ -23,18 +25,6 @@ logging.basicConfig(
 
 app = FastAPI()
 model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")  # 768 chiều 
-
-# # Configure CORS
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
-# # Increase request size limit
-# app.max_request_size = 500 * 1024 * 1024  # 50MB
 
 
 
@@ -125,41 +115,71 @@ def upload_file_to_db(file_path):
 
 
 @app.get("/search")
-def search_form(query: str):
-    logging.info(f"🔍 Đang tìm kiếm với truy vấn: {query}")
+def semantic_search(
+    query: str = Query(..., description="Câu truy vấn tìm kiếm"),
+    top_k: int = Query(5, description="Số lượng kết quả muốn trả về")
+):
+    """
+    ✅ API Semantic Search nâng cao:
+    - Mã hóa truy vấn bằng S-BERT
+    - Tính độ tương đồng cosine
+    - Lọc đoạn văn phù hợp
+    - Gợi ý fallback nếu không có đoạn chứa từ khóa
+    - Trả lý do + điểm số cho từng kết quả
+    """
+    logging.info(f"🔍 Semantic search: {query}")
     try:
-        query_embedding = model.encode(query)
-        logging.info(f"Query embedding: {query_embedding[:10]}")
+        # ✅ 1. Mã hóa truy vấn bằng S-BERT
+        query_vec = model.encode(query).tolist()
 
-        cursor.execute("""
-            SELECT title, content, file_path, created_at
-            FROM forms
-            ORDER BY embedding <=> %s::vector
-            LIMIT 1
-        """, (query_embedding.tolist(),))
+        # ✅ 2. Truy vấn dữ liệu từ DB
+        cursor.execute("SELECT title, content, embedding FROM forms")
+        rows = cursor.fetchall()
 
-        result = cursor.fetchone()
-        if result:
-           return {
-                "query": query,
-                "results": [
-                    {
-                        "title": result[0],
-                        "content": result[1][:500] + "...",
-                        "file_path": result[2],
-                        "created_at": str(result[3]) 
-                    }
-                ]
-            }
-        else:
-            return {
-                "query": query,
-                "results": []
-            }
+        def cosine_similarity(a, b):
+            # ✅ 3. Ép kiểu an toàn sang float32 (SỬA MỚI)
+            a = np.array(a, dtype=np.float32)
+            b = np.array(eval(b), dtype=np.float32) if isinstance(b, str) else np.array(b, dtype=np.float32)
+            return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
+        scored = []
+        for title, content, embedding in rows:
+            try:
+                score = cosine_similarity(query_vec, embedding)
+                scored.append((title, content, score))
+            except Exception as vector_err:
+                logging.warning(f"⚠️ Bỏ qua vector lỗi: {vector_err}")
+                continue
+
+        if not scored:
+            return JSONResponse(status_code=404, content={"message": "Không tìm thấy kết quả phù hợp."})
+
+        # ✅ 4. Lấy top_k kết quả theo điểm
+        top_results = sorted(scored, key=lambda x: x[2], reverse=True)[:top_k]
+
+        final_results = []
+        for title, content, score in top_results:
+            sentences = re.split(r'[.?!]\s+', content)
+            matched = [s for s in sentences if query.lower() in s.lower()]
+            snippet = " ".join(matched)[:300] + "..." if matched else content[:300] + "..."
+            final_results.append({
+                "title": title,
+                "snippet": snippet,
+                "similarity_score": round(score, 4),
+                "reason": "Tìm thấy câu chứa từ khóa truy vấn" if matched else "Gợi ý theo độ tương đồng ngữ nghĩa"
+            })
+
+        return {
+            "query": query,
+            "top_matches": final_results
+        }
+
     except Exception as e:
-        logging.error(f"Lỗi trong quá trình tìm kiếm: {e}")
-        cursor.execute("ROLLBACK;")
-        return {"error": f"Search failed: {e}"}
+        logging.error(f"❌ Search error: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Search failed", "detail": str(e)}
+        )
 
 #API Top-K tìm kiếm k biểu mẫu
 @app.post("/top-k")

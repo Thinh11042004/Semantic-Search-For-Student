@@ -22,56 +22,83 @@ interface Form {
 }
 
 export default function SearchForms() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [forms, setForms] = useState<Form[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [debounceId, setDebounceId] = useState<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
 
-  const loadForms = async (pageNum = 1) => {
-    try {
-      setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/forms/page?page=${pageNum}&limit=5`);
-      const data = await res.json();
-      setForms(data.forms);
-      setTotalPages(data.totalPages);
-      setIsSearching(false);
-    } catch (error) {
-      console.error("Lỗi tải forms:", error);
-    } finally {
-      setLoading(false);
-    }
+   // Load form theo page mặc định
+   const loadForms = (pageNum = 1) => {
+    setLoading(true);
+    fetch(`http://localhost:5000/api/forms/page?page=${pageNum}&limit=5`)
+      .then(res => res.json())
+      .then(data => {
+        setForms(data.forms);
+        setTotalPages(data.totalPages);
+        setIsSearching(false);
+      })
+      .catch(err => console.error("Lỗi tải forms:", err))
+      .finally(() => setLoading(false));
   };
 
+
+   // Khi mới vào trang, load page đầu tiên
   useEffect(() => {
     if (!isSearching) loadForms(page);
   }, [page]);
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
+  // Xử lý tìm kiếm khi bấm nút hoặc Enter
+  const handleSearch = () => {
+    if (searchQuery.trim() === "") {
       loadForms(1);
       return;
     }
-    try {
-      setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/forms/search?query=${encodeURIComponent(searchQuery)}`);
-      const data = await res.json();
-      setForms(data.results || []);
-      setTotalPages(1);
-      setIsSearching(true);
 
-      const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
-      if (userId) {
-        logActivity(userId, 'search', `Tìm kiếm với từ khóa: ${searchQuery}`);
-      }
-    } catch (error) {
-      console.error("Lỗi tìm kiếm:", error);
-    } finally {
-      setLoading(false);
+    setLoading(true);
+    fetch(`http://localhost:5000/api/forms/search?query=${encodeURIComponent(searchQuery)}`)
+      .then(res => res.json())
+      .then(data => {
+        setForms(data.results || []);
+        setTotalPages(1);
+        setIsSearching(true);
+
+        const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
+        if (userId) {
+            logActivity(userId, 'search', `Tìm kiếm với từ khóa: ${searchQuery}`);
+        }
+        
+      })
+      .catch(err => console.error("Lỗi tìm kiếm:", err))
+      .finally(() => setLoading(false));
+  };
+
+  // Xử lý nhấn Enter trong ô tìm kiếm
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
     }
   };
+
+  // Khi người dùng gõ vào input (debounce 0.5 giây)
+  useEffect(() => {
+    if (debounceId) clearTimeout(debounceId);
+
+    const id = setTimeout(() => {
+      if (searchQuery.trim() !== "") {
+        handleSearch();
+      } else {
+        loadForms(1);
+      }
+    }, 500);
+
+    setDebounceId(id);
+
+    return () => clearTimeout(id);
+  }, [searchQuery]);
 
   const goToPage = (pageNum: number) => {
     if (pageNum >= 1 && pageNum <= totalPages) setPage(pageNum);
@@ -80,13 +107,14 @@ export default function SearchForms() {
   return (
     <MainLayout>
       <PageContainer>
+              {/* Header */}
         <div className="flex flex-col items-center bg-[#fafbfc] text-gray-900">
           <div className="w-full flex flex-col items-center pt-12 pb-4">
             <h1 className="text-4xl font-bold mb-2 text-center">Intelligent Document Search & Analysis</h1>
             <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl">
               Transform the way you search through documents with our advanced semantic search technology.
             </p>
-
+          {/* Search Bar */}
             <div className="w-full max-w-xl flex items-center bg-white rounded-full shadow-lg px-6 py-3 mb-8 border border-gray-100">
               <input
                 type="text"
@@ -94,6 +122,7 @@ export default function SearchForms() {
                 className="flex-1 bg-transparent outline-none text-lg placeholder-gray-400"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
               />
               <button
                 onClick={handleSearch}
@@ -107,23 +136,34 @@ export default function SearchForms() {
             </div>
           </div>
 
+              {/* Loading spinner */}
+          {loading && (
+            <p className="text-gray-500 mb-4">Đang tải dữ liệu...</p>
+          )}
+
+          {/* Results */}
           <div className="w-full max-w-xl mt-8 space-y-4">
-            {forms.map(form => (
-              <div
-                key={form.id}
-                className="flex items-center justify-between px-4 py-2 bg-white rounded shadow hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/open-file/${form.id}`)}
-              >
-                <div className="flex items-center space-x-4">
-                  <PDFIcon />
-                  <div>
-                    <p className="font-semibold">{form.title}</p>
-                    <p className="text-sm text-gray-500">{new Date(form.created_at).toLocaleDateString()}</p>
+            {forms.length === 0 && !loading ? (
+              <p className="text-center text-gray-500">Không tìm thấy biểu mẫu nào.</p>
+            ) : (
+              forms.map((form) => (
+                <div
+                  key={form.id}
+                  className="flex items-center justify-between px-4 py-2 bg-white rounded shadow hover:bg-gray-50 cursor-pointer"
+                  onClick={() => navigate(`/open-file/${form.id}`)}
+                >
+                  <div className="flex items-center space-x-4">
+                    <PDFIcon />
+                    <div>
+                      <p className="font-semibold">{form.title}</p>
+                      <p className="text-sm text-gray-500">{new Date(form.created_at).toLocaleDateString()}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
+
 
           <div className="mt-10 flex justify-center items-center gap-2 bg-white py-2 px-6 rounded-full shadow-md">
             <button

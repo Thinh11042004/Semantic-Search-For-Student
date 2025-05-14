@@ -548,3 +548,15 @@ LINE 3:             FROM froms
 2025-05-13 16:01:58,207 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
 2025-05-13 16:06:38,714 - INFO - Use pytorch device_name: cpu
 2025-05-13 16:06:38,714 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-13 16:19:41,747 - INFO - Use pytorch device_name: cpu
+2025-05-13 16:19:41,748 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-14 02:42:03,508 - INFO - Use pytorch device_name: cpu
+2025-05-14 02:42:03,508 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-14 02:42:11,498 - INFO - Use pytorch device_name: cpu
+2025-05-14 02:42:11,498 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-14 02:43:07,728 - INFO - Use pytorch device_name: cpu
+2025-05-14 02:43:07,729 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-14 02:43:23,821 - INFO - Use pytorch device_name: cpu
+2025-05-14 02:43:23,822 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-14 02:45:12,796 - INFO - 🔍 Semantic search: Toio
+2025-05-14 02:45:23,854 - INFO - 🔍 Semantic search: Tôi muốn nhập học
