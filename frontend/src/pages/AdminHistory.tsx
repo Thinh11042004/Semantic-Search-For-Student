@@ -3,17 +3,19 @@ import { useAuth } from '../contexts/AuthContext';
 import MainLayout from '../components/Layout/MainLayout';
 import PageContainer from '../components/Layout/PageContainer';
 
-interface UploadHistoryItem {
+interface UploadLog {
   id: number;
   filename: string;
-  date: string;
+  upload_date: string;
   status: string;
   user_name: string;
+  deleted_by?: string;
+  delete_date?: string;
 }
 
 const AdminHistory: React.FC = () => {
   const { user } = useAuth();
-  const [uploadHistory, setUploadHistory] = useState<UploadHistoryItem[]>([]);
+  const [logs, setLogs] = useState<UploadLog[]>([]);
   const [activeTab, setActiveTab] = useState<'upload' | 'delete'>('upload');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,18 +25,14 @@ const AdminHistory: React.FC = () => {
   useEffect(() => {
     if (!user) return;
     setLoading(true);
-    fetch('http://localhost:5000/api/history/uploads')
+    fetch('http://localhost:5000/api/history/admin-logs')
       .then(res => res.json())
       .then(data => {
-        setUploadHistory(data.uploads || []);
+        setLogs(data.uploads || []);
       })
-      .catch(err => console.error('Lỗi lấy lịch sử upload/delete:', err))
+      .catch(err => console.error('Lỗi lấy lịch sử:', err))
       .finally(() => setLoading(false));
   }, [user]);
-
-  const filtered = uploadHistory.filter(item => item.status === activeTab);
-  const pageCount = Math.ceil(filtered.length / itemsPerPage);
-  const currentItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -47,31 +45,39 @@ const AdminHistory: React.FC = () => {
     });
   };
 
+  const filtered = activeTab === 'upload'
+    ? logs.filter(item => item.status === 'upload' || item.status === 'deleted')
+    : logs.filter(item => item.status === 'deleted');
+
+  const pageCount = Math.ceil(filtered.length / itemsPerPage);
+  const currentItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const handleDeleteSelected = async () => {
-    if (!window.confirm("Bạn có chắc muốn xóa các mục đã chọn?")) return;
-  
+    if (!window.confirm('Bạn có chắc muốn xoá các mục đã chọn?')) return;
+    if (!user?.id) return;
     try {
       const response = await fetch('http://localhost:5000/api/history/uploads/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selectedIds })
+        body: JSON.stringify({ ids: selectedIds, user_id: user.id })
       });
-  
       const result = await response.json();
       if (response.ok) {
-        alert("✅ Đã xóa thành công");
-        // Cập nhật lại danh sách
-        setUploadHistory(prev => prev.filter(item => !selectedIds.includes(item.id)));
+        alert('✅ Đã xoá thành công');
+        setLogs(prev => prev.map(log =>
+          selectedIds.includes(log.id)
+            ? { ...log, status: 'deleted', delete_date: new Date().toISOString(), deleted_by: user.name }
+            : log
+        ));
         setSelectedIds([]);
       } else {
-        alert("❌ Lỗi xóa: " + result.message);
+        alert('❌ Xoá thất bại: ' + result.message);
       }
     } catch (err) {
-      console.error("Lỗi khi xoá:", err);
-      alert("Lỗi server khi xóa.");
+      console.error('Lỗi xoá:', err);
+      alert('❌ Lỗi server khi xoá.');
     }
   };
-  
 
   return (
     <MainLayout>
@@ -86,101 +92,84 @@ const AdminHistory: React.FC = () => {
               <div>
                 <button
                   className={`px-6 py-3 font-medium text-lg ${
-                    activeTab === 'upload'
-                      ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-600'
-                      : 'bg-gray-100 text-gray-700'
+                    activeTab === 'upload' ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-600' : 'bg-gray-100 text-gray-700'
                   }`}
                   onClick={() => {
                     setActiveTab('upload');
-                    setSelectedIds([]);
                     setCurrentPage(1);
+                    setSelectedIds([]);
                   }}
                 >
                   Thông tin upload
                 </button>
                 <button
                   className={`ml-4 px-6 py-3 font-medium text-lg ${
-                    activeTab === 'delete'
-                      ? 'bg-red-100 text-red-700 border-b-2 border-red-600'
-                      : 'bg-gray-100 text-gray-700'
+                    activeTab === 'delete' ? 'bg-red-100 text-red-700 border-b-2 border-red-600' : 'bg-gray-100 text-gray-700'
                   }`}
                   onClick={() => {
                     setActiveTab('delete');
-                    setSelectedIds([]);
                     setCurrentPage(1);
+                    setSelectedIds([]);
                   }}
                 >
-                  Thông tin file bị xóa
+                  Thông tin file bị xoá
                 </button>
               </div>
-              {selectedIds.length > 0 && (
-                    <div className="ml-4 px-6 py-3 font-medium text-lg">
-                      <button
-                        onClick={handleDeleteSelected}
-                        className="bg-red-500 text-white border-red-600 rounded hover:bg-red-700 transition"
-                      >
-                        Xoá {selectedIds.length} mục
-                      </button>
-                    </div>
-                  )}
+              {selectedIds.length > 0 && activeTab === 'upload' && (
+                <button
+                  onClick={handleDeleteSelected}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Xoá {selectedIds.length} mục
+                </button>
+              )}
             </div>
 
             {loading ? (
-              <p className="text-center mt-10 text-gray-500">Đang tải lịch sử...</p>
-            ) : currentItems.length === 0 ? (
-              <p className="text-gray-500">Không có lịch sử {activeTab === 'upload' ? 'tải lên' : 'xóa'}.</p>
+              <p className="text-center mt-10 text-gray-500">Đang tải...</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-100 text-gray-800 font-semibold">
                     <tr>
-                    <th className="px-4 py-3 text-left">
-                      <input
-                        type="checkbox"
-                        onChange={(e) =>
-                          setSelectedIds(
-                            e.target.checked ? currentItems.map(item => item.id) : []
-                          )
-                        }
-                        checked={selectedIds.length === currentItems.length}
-                      />
-                    </th>
+                      {activeTab === 'upload' && <th className="px-4 py-3 text-left">Chọn</th>}
                       <th className="px-6 py-3 text-left">Tên tệp</th>
                       <th className="px-6 py-3 text-left">Người thực hiện</th>
-                      <th className="px-6 py-3 text-left">Ngày</th>
+                      <th className="px-6 py-3 text-left">Ngày upload</th>
+                      {activeTab === 'delete' && <th className="px-6 py-3 text-left">Ngày xoá</th>}
                       <th className="px-6 py-3 text-left">Trạng thái</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentItems.map(item => (
-                      <tr
-                        key={item.id}
-                        className={`hover:bg-gray-50 ${
-                          item.status === 'upload' ? 'bg-blue-50' : 'bg-red-50'
-                        }`}
-                      >
-                        <td className="px-4 py-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(item.id)}
-                          onChange={() =>
-                            setSelectedIds(prev =>
-                              prev.includes(item.id)
-                                ? prev.filter(id => id !== item.id)
-                                : [...prev, item.id]
-                            )
-                          }
-                        />
-                        </td>
+                      <tr key={item.id} className="hover:bg-gray-50">
+                        {activeTab === 'upload' && (
+                          <td className="px-4 py-4">
+                            {item.status === 'upload' ? (
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.includes(item.id)}
+                                onChange={() =>
+                                  setSelectedIds(prev =>
+                                    prev.includes(item.id)
+                                      ? prev.filter(id => id !== item.id)
+                                      : [...prev, item.id]
+                                  )
+                                }
+                              />
+                            ) : (
+                              <span className="text-sm italic text-gray-400">Đã xoá</span>
+                            )}
+                          </td>
+                        )}
                         <td className="px-6 py-4 text-gray-900 font-medium">{item.filename}</td>
                         <td className="px-6 py-4 text-gray-900">{item.user_name}</td>
-                        <td className="px-6 py-4 text-gray-900">{formatDate(item.date)}</td>
-                        <td
-                          className={`px-6 py-4 font-semibold capitalize ${
-                            item.status === 'upload' ? 'text-blue-700' : 'text-red-600'
-                          }`}
-                        >
-                          {item.status}
+                        <td className="px-6 py-4 text-gray-900">{formatDate(item.upload_date)}</td>
+                        {activeTab === 'delete' && <td className="px-6 py-4 text-gray-900">{formatDate(item.delete_date || '')}</td>}
+                        <td className="px-6 py-4 font-semibold capitalize text-blue-700">
+                          {activeTab === 'upload'
+                            ? (item.status === 'upload' ? 'Upload' : 'Upload ⇒ Delete')
+                            : 'Delete'}
                         </td>
                       </tr>
                     ))}

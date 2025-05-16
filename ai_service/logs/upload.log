@@ -560,3 +560,91 @@ LINE 3:             FROM froms
 2025-05-14 02:43:23,822 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
 2025-05-14 02:45:12,796 - INFO - 🔍 Semantic search: Toio
 2025-05-14 02:45:23,854 - INFO - 🔍 Semantic search: Tôi muốn nhập học
+2025-05-14 03:05:55,851 - INFO - Use pytorch device_name: cpu
+2025-05-14 03:05:55,851 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-14 03:22:03,690 - INFO - 🔍 Semantic search: T
+2025-05-14 03:22:04,982 - INFO - 🔍 Semantic search: Tôi
+2025-05-14 03:22:06,899 - INFO - 🔍 Semantic search: Tôi muônd
+2025-05-14 03:22:07,994 - INFO - 🔍 Semantic search: Tôi muốn
+2025-05-14 03:22:10,343 - INFO - 🔍 Semantic search: Tôi muốn nghỉ 
+2025-05-14 03:22:11,533 - INFO - 🔍 Semantic search: Tôi muốn nghỉ hioc
+2025-05-14 03:22:13,877 - INFO - 🔍 Semantic search: Tôi muốn nghỉ học
+2025-05-14 03:44:10,194 - INFO - 🔍 Semantic search: thonbgo
+2025-05-14 03:44:12,109 - INFO - 🔍 Semantic search: thonngo
+2025-05-14 03:44:13,218 - INFO - 🔍 Semantic search: thon
+2025-05-14 03:44:14,326 - INFO - 🔍 Semantic search: thôngt
+2025-05-14 03:44:17,731 - INFO - 🔍 Semantic search: thông tin sinh viên
+2025-05-14 03:44:31,426 - INFO - 🔍 Semantic search: Tôi
+2025-05-14 03:44:36,172 - INFO - 🔍 Semantic search: Tôi muốn nghỉ học
+2025-05-14 03:44:41,223 - INFO - 🔍 Semantic search: nghỉ học
+2025-05-14 03:45:38,145 - INFO - 🔍 Semantic search: tôi muốn chuyển trường
+2025-05-15 00:43:41,019 - INFO - Use pytorch device_name: cpu
+2025-05-15 00:43:41,020 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 00:47:36,040 - INFO - Use pytorch device_name: cpu
+2025-05-15 00:47:36,040 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 00:47:52,434 - INFO - Use pytorch device_name: cpu
+2025-05-15 00:47:52,434 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:26:29,038 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:26:29,039 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:26:33,138 - WARNING - Xet Storage is enabled for this repo, but the 'hf_xet' package is not installed. Falling back to regular HTTP download. For better performance, install the package with: `pip install huggingface_hub[hf_xet]` or `pip install hf_xet`
+2025-05-15 01:27:52,232 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:27:52,233 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:27:55,804 - INFO - 🔍 Semantic search: nh
+2025-05-15 01:27:55,807 - INFO - 🔍 Semantic search: nhạp
+2025-05-15 01:27:55,809 - INFO - 🔍 Semantic search: nhập
+2025-05-15 01:27:55,810 - INFO - 🔍 Semantic search: nhập 
+2025-05-15 01:27:56,282 - INFO - 🔍 Semantic search: nhập học
+2025-05-15 01:27:58,230 - INFO - 🔍 Semantic search: nhập học 
+2025-05-15 01:28:00,370 - INFO - 🔍 Semantic search: nhập học lại
+2025-05-15 01:36:27,495 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:36:27,495 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:36:36,099 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:36:36,100 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:37:49,467 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:37:49,467 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:37:53,605 - WARNING - Xet Storage is enabled for this repo, but the 'hf_xet' package is not installed. Falling back to regular HTTP download. For better performance, install the package with: `pip install huggingface_hub[hf_xet]` or `pip install hf_xet`
+2025-05-15 01:39:09,338 - INFO - 🔍 Semantic search: Chuy
+2025-05-15 01:39:15,645 - INFO - 🔍 Semantic search: chuyển
+2025-05-15 01:39:17,800 - INFO - 🔍 Semantic search: chuyển ngành hc
+2025-05-15 01:39:19,163 - INFO - 🔍 Semantic search: chuyển ngành học
+2025-05-15 01:40:43,341 - INFO - 🔍 Semantic search: chuyển 
+2025-05-15 01:40:44,258 - INFO - 🔍 Semantic search: chuyển g
+2025-05-15 01:40:45,717 - INFO - 🔍 Semantic search: chuyển ngnh
+2025-05-15 01:40:47,114 - INFO - 🔍 Semantic search: chuyển ngành
+2025-05-15 01:40:50,616 - INFO - 🔍 Semantic search: chuyển ng
+2025-05-15 01:40:51,656 - INFO - 🔍 Semantic search: chuyển nghành
+2025-05-15 01:40:53,521 - INFO - 🔍 Semantic search: chuyển ng
+2025-05-15 01:40:54,142 - INFO - 🔍 Semantic search: chuyển n
+2025-05-15 01:41:30,133 - INFO - 🔍 Semantic search: CHUYỂN NGÀNH
+2025-05-15 01:41:38,493 - INFO - 🔍 Semantic search: tôi muốn c
+2025-05-15 01:41:40,526 - INFO - 🔍 Semantic search: tôi muốn chuyển 
+2025-05-15 01:41:41,637 - INFO - 🔍 Semantic search: tôi muốn chuyển ngnahf
+2025-05-15 01:41:43,621 - INFO - 🔍 Semantic search: tôi muốn chuyển ngành
+2025-05-15 01:41:53,916 - INFO - 🔍 Semantic search: Đơn xin h
+2025-05-15 01:41:55,723 - INFO - 🔍 Semantic search: Đơn xin chuyển
+2025-05-15 01:41:57,705 - INFO - 🔍 Semantic search: Đơn xin chuyển ngnahf
+2025-05-15 01:42:00,058 - INFO - 🔍 Semantic search: Đơn xin chuyển ngành
+2025-05-15 01:44:44,339 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:44:44,339 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:44:57,284 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:44:57,284 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:45:01,910 - WARNING - Xet Storage is enabled for this repo, but the 'hf_xet' package is not installed. Falling back to regular HTTP download. For better performance, install the package with: `pip install huggingface_hub[hf_xet]` or `pip install hf_xet`
+2025-05-15 01:46:09,499 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:46:09,500 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:46:13,718 - WARNING - Xet Storage is enabled for this repo, but the 'hf_xet' package is not installed. Falling back to regular HTTP download. For better performance, install the package with: `pip install huggingface_hub[hf_xet]` or `pip install hf_xet`
+2025-05-15 01:50:12,498 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:50:12,499 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:50:21,121 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:50:21,122 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:50:30,598 - INFO - Use pytorch device_name: cpu
+2025-05-15 01:50:30,598 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 01:50:34,327 - WARNING - Xet Storage is enabled for this repo, but the 'hf_xet' package is not installed. Falling back to regular HTTP download. For better performance, install the package with: `pip install huggingface_hub[hf_xet]` or `pip install hf_xet`
+2025-05-15 01:59:51,302 - INFO - 🔍 Semantic search: chuyenng
+2025-05-15 01:59:53,301 - INFO - 🔍 Semantic search: chuyen
+2025-05-15 01:59:56,018 - INFO - 🔍 Semantic search: chuyen 
+2025-05-15 02:50:54,989 - INFO - Use pytorch device_name: cpu
+2025-05-15 02:50:54,989 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 02:50:59,464 - WARNING - Xet Storage is enabled for this repo, but the 'hf_xet' package is not installed. Falling back to regular HTTP download. For better performance, install the package with: `pip install huggingface_hub[hf_xet]` or `pip install hf_xet`
+2025-05-15 03:21:13,624 - INFO - Use pytorch device_name: cpu
+2025-05-15 03:21:13,625 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-15 03:21:17,944 - WARNING - Xet Storage is enabled for this repo, but the 'hf_xet' package is not installed. Falling back to regular HTTP download. For better performance, install the package with: `pip install huggingface_hub[hf_xet]` or `pip install hf_xet`

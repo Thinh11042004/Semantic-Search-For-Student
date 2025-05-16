@@ -1,16 +1,15 @@
 import os
 import logging
+import unicodedata  # hỗ trợ chuẩn hóa tiếng Việt không dấu
 from fastapi import FastAPI, Body, Query
+from fastapi.responses import JSONResponse
 from sentence_transformers import SentenceTransformer
 import psycopg2
 from PyPDF2 import PdfReader
 import docx 
-from fastapi.responses import JSONResponse
 from typing import Union, List
 import numpy as np
-import logging
 import re
-
 
 # Tạo thư mục logs nếu chưa có
 if not os.path.exists("logs"):
@@ -25,8 +24,6 @@ logging.basicConfig(
 
 app = FastAPI()
 model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")  # 768 chiều 
-
-
 
 # Kết nối PostgreSQL
 conn = psycopg2.connect(
@@ -54,14 +51,41 @@ def extract_text_from_docx(docx_path):
     doc = docx.Document(docx_path)
     return "\n".join([para.text for para in doc.paragraphs])
 
+# Chuẩn hóa tiếng Việt (bỏ dấu, lowercase)
+def normalize_text(text):
+    """
+    ✅ Chuẩn hóa tiếng Việt: bỏ dấu, chuyển về lowercase
+    """
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join([c for c in text if unicodedata.category(c) != 'Mn'])
+    return text.lower()
 
-# Hàm kiểm tra xem tên file đã tồn tại trong cơ sở dữ liệu chưa (Đây là phần thay đổi)
+# 🔧 MỚI: Mapping từ viết tắt hoặc tiếng Anh phổ biến
+SYNONYM_MAP = {
+    "hocbong": "học bổng",
+    "hoclai": "học lại",
+    "nghihoc": "nghỉ học",
+    "report": "tường trình",
+    "dt": "điện thoại",
+    "sv": "sinh viên",
+    "gv": "giảng viên",
+    "cancel": "hủy",
+    "apply": "xin",
+    "form": "biểu mẫu",
+}
+
+def normalize_and_expand(text):
+    """
+    ✅ Chuẩn hóa + xử lý viết liền + dịch viết tắt/tiếng Anh
+    """
+    text = normalize_text(text.replace(" ", ""))
+    return SYNONYM_MAP.get(text, text)
+
+# Hàm kiểm tra xem tên file đã tồn tại trong cơ sở dữ liệu chưa
 def is_file_exists(title):  
     cursor.execute("SELECT COUNT(*) FROM forms WHERE title = %s", (title,))
     count = cursor.fetchone()[0]
-    return count > 0  # Nếu count > 0, nghĩa là file đã tồn tại
-
-
+    return count > 0
 
 # Hàm xóa tất cả các bản ghi trùng tên file
 def delete_duplicate_files():
@@ -73,21 +97,20 @@ def delete_duplicate_files():
                 FROM documents
                 GROUP BY title
             );
-        """)  # Xóa tất cả các bản ghi trùng, chỉ giữ lại bản ghi đầu tiên có cùng title
+        """)
         conn.commit()
         logging.info("Đã xóa tất cả các bản ghi trùng tên file.")
     except Exception as e:
         logging.error(f"Lỗi khi xóa file trùng: {e}")
         conn.rollback()
 
-
 # Hàm upload file (dùng chung cho API và auto load)
 def upload_file_to_db(file_path):
     title = os.path.basename(file_path)
     
-    if is_file_exists(title):  # Nếu file đã tồn tại
+    if is_file_exists(title):
         logging.info(f"File '{title}' đã tồn tại. Xóa file trùng...")
-        delete_duplicate_files()  # Xóa file trùng
+        delete_duplicate_files()
     
     content = ""
     if file_path.endswith(".pdf"):
@@ -113,94 +136,96 @@ def upload_file_to_db(file_path):
         conn.rollback()
         return {"error": f"Failed to upload file: {e}"}
 
-
+#API/ Search
 @app.get("/search")
 def semantic_search(
     query: str = Query(..., description="Câu truy vấn tìm kiếm"),
     top_k: int = Query(5, description="Số lượng kết quả muốn trả về")
 ):
     """
-    ✅ API Semantic Search nâng cao:
-    - Mã hóa truy vấn bằng S-BERT
-    - Tính độ tương đồng cosine
-    - Lọc đoạn văn phù hợp
-    - Gợi ý fallback nếu không có đoạn chứa từ khóa
-    - Trả lý do + điểm số cho từng kết quả
+    🔍 Semantic search kết hợp từ khóa gần đúng, viết tắt, và vector ngữ nghĩa SBERT.
     """
     logging.info(f"🔍 Semantic search: {query}")
     try:
-        # ✅ 1. Mã hóa truy vấn bằng S-BERT
+        # Mã hóa truy vấn thành vector
         query_vec = model.encode(query).tolist()
 
-        # ✅ 2. Truy vấn dữ liệu từ DB
-        cursor.execute("SELECT title, content, embedding FROM forms")
+        # Chuẩn hóa truy vấn (không dấu, viết tắt, dịch tiếng Anh)
+        query_clean = normalize_text(query)
+        query_expanded = normalize_and_expand(query_clean)
+
+        # Lấy toàn bộ biểu mẫu
+        cursor.execute("SELECT id, title, content, embedding FROM forms")
         rows = cursor.fetchall()
 
+        # Tính cosine similarity
         def cosine_similarity(a, b):
-            # ✅ 3. Ép kiểu an toàn sang float32 (SỬA MỚI)
             a = np.array(a, dtype=np.float32)
             b = np.array(eval(b), dtype=np.float32) if isinstance(b, str) else np.array(b, dtype=np.float32)
             return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
-        scored = []
-        for title, content, embedding in rows:
-            try:
+        results = []
+
+        for _id, title, content, embedding in rows:
+            title_clean = normalize_text(title)
+            content_clean = normalize_text(content)
+            full_text = f"{title_clean} {content_clean}"
+
+            if query_expanded in title_clean:
+                score = 1.0
+                reason = "🎯 Khớp gần đúng tiêu đề (không dấu)"
+            elif query_expanded in full_text:
+                score = 0.9
+                reason = "📚 Khớp toàn văn (chuẩn hóa không dấu)"
+            elif any(word in full_text for word in query_expanded.split()):
+                score = 0.8
+                reason = "📌 Có từ liên quan trong nội dung"
+            else:
                 score = cosine_similarity(query_vec, embedding)
-                scored.append((title, content, score))
-            except Exception as vector_err:
-                logging.warning(f"⚠️ Bỏ qua vector lỗi: {vector_err}")
-                continue
+                reason = "🤖 Khớp ngữ nghĩa (SBERT)"
 
-        if not scored:
-            return JSONResponse(status_code=404, content={"message": "Không tìm thấy kết quả phù hợp."})
-
-        # ✅ 4. Lấy top_k kết quả theo điểm
-        top_results = sorted(scored, key=lambda x: x[2], reverse=True)[:top_k]
-
-        final_results = []
-        for title, content, score in top_results:
+            # Tạo snippet phù hợp
             sentences = re.split(r'[.?!]\s+', content)
-            matched = [s for s in sentences if query.lower() in s.lower()]
+            matched = [s for s in sentences if query_expanded in normalize_text(s)]
             snippet = " ".join(matched)[:300] + "..." if matched else content[:300] + "..."
-            final_results.append({
+
+            results.append({
+                "id": _id,
                 "title": title,
                 "snippet": snippet,
                 "similarity_score": round(score, 4),
-                "reason": "Tìm thấy câu chứa từ khóa truy vấn" if matched else "Gợi ý theo độ tương đồng ngữ nghĩa"
+                "reason": reason
             })
+
+        # Trả về top-k theo score
+        sorted_results = sorted(results, key=lambda x: x["similarity_score"], reverse=True)
 
         return {
             "query": query,
-            "top_matches": final_results
+            "results": sorted_results[:top_k] 
         }
 
     except Exception as e:
-        logging.error(f"❌ Search error: {e}")
+        logging.error(f"❌ Lỗi tìm kiếm: {e}")
         return JSONResponse(
             status_code=500,
-            content={"error": "Search failed", "detail": str(e)}
+            content={"error": "Lỗi hệ thống", "detail": str(e)}
         )
 
-#API Top-K tìm kiếm k biểu mẫu
+
+
 @app.post("/top-k")
 def top_k_search(query: str = Body(...), k: int = Body(...)):
     logging.info(f"🔍 Đang tìm kiếm với truy vấn: {query}, Top {k} kết quả")
-
     try:
-        # Mã hóa truy vấn thành vector
-        query_embedding = model.encode(query).tolist()  # Chuyển đổi thành Python list
-
-        # Truy vấn PostgreSQL để lấy top-K kết quả tìm kiếm
+        query_embedding = model.encode(query).tolist()
         cursor.execute("""
             SELECT title, content
             FROM forms
-            ORDER BY embedding <=> %s::vector  -- So sánh vector
+            ORDER BY embedding <=> %s::vector
             LIMIT %s;
-        """, (query_embedding, k))  # Truyền vào query_embedding dưới dạng list và k
-
+        """, (query_embedding, k))
         results = cursor.fetchall()
-        
-        # Trả về kết quả
         if results:
             return {
                 "query": query,
@@ -215,19 +240,15 @@ def top_k_search(query: str = Body(...), k: int = Body(...)):
             }
     except Exception as e:
         logging.error(f"Lỗi trong quá trình tìm kiếm: {e}")
-        cursor.execute("ROLLBACK;")  # Hủy giao dịch nếu có lỗi
+        cursor.execute("ROLLBACK;")
         return {"error": f"Top-K search failed: {e}"}
 
-
-
-# ✅ API: Nhận văn bản, trả  vector
 @app.post("/get-embedding")
 def get_embedding(text: Union[str, List[str]] = Body(...)):
-  
     try:
         if isinstance(text, str):
             text = [text]
-        text = [t[:5000] for t in text]  # Giới hạn văn bản dài
+        text = [t[:5000] for t in text]
         embeddings = model.encode(text).tolist()
         return {
             "embedding": embeddings[0] if len(embeddings) == 1 else embeddings
@@ -238,4 +259,3 @@ def get_embedding(text: Union[str, List[str]] = Body(...)):
             status_code=500,
             content={"status": "error", "message": f"Lỗi khi sinh embedding: {e}"}
         )
-  

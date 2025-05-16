@@ -12,9 +12,9 @@ const {
 const { uploadForm } = require('../controllers/uploadController');
 const { searchForms } = require('../controllers/searchFormController');
 const {
-  logUploadOrDelete,
-  getUploadLogs,
-  deleteFiles,
+  // logUploadOrDelete,
+  // getUploadLogs,
+  // deleteFiles,
   logDownload,
   getDownloadHistory
 } = require('../controllers/historyController');
@@ -37,13 +37,5 @@ router.post('/upload', upload.array('form'), uploadForm);
 router.get('/page', getFormsByPage);
 router.get('/search', searchForms);
 router.get('/:id', getFormById);
-
-// === HISTORY ===
-router.post('/uploads', logUploadOrDelete);
-router.get('/uploads', getUploadLogs);
-router.post('/uploads/delete', deleteFiles);
-
-router.post('/downloads', logDownload);
-router.post('/downloads/user', getDownloadHistory);
 
 module.exports = router;

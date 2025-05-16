@@ -4,92 +4,82 @@ const path = require('path');
 
 // ✅ Ghi log upload hoặc delete
 const logUploadOrDelete = async (req, res) => {
+  const { filename, status, user_id } = req.body;
+  if (!filename || !status || !user_id) return res.status(400).json({ message: 'Thiếu thông tin' });
   try {
-    const { filename, status, user_id } = req.body;
-
-    if (!filename || !status || !user_id) {
-      return res.status(400).json({ message: 'Thiếu thông tin cần thiết để ghi log.' });
-    }
-
     const result = await pool.query(
-      'INSERT INTO upload_logs (filename, user_id, status) VALUES ($1, $2, $3) RETURNING *',
-      [filename, user_id, status]
+      'INSERT INTO upload_logs (filename, status, user_id) VALUES ($1, $2, $3) RETURNING *',
+      [filename, status, user_id]
     );
-
-    res.status(201).json({ message: 'Đã ghi log upload/delete', log: result.rows[0] });
+    res.status(201).json({ message: 'Đã ghi log', log: result.rows[0] });
   } catch (err) {
-    console.error('❌ Lỗi ghi log:', err);
-    res.status(500).json({ message: 'Lỗi ghi log' });
+    console.error('❌ Ghi log thất bại:', err);
+    res.status(500).json({ message: 'Ghi log thất bại' });
   }
 };
 
-// ✅ Lấy lịch sử upload/delete (dùng cho admin)
-const getUploadLogs = async (req, res) => {
+// ✅ Lấy lịch sử upload/delete cho admin
+const getAdminHistoryLogs = async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT l.id, l.filename, l.status, l.created_at AS date, u.name AS user_name,
-      EXISTS (
-        SELECT 1 FROM upload_logs d
-        WHERE d.filename = l.filename AND d.status = 'delete'
-      ) AS is_deleted
-    FROM upload_logs l
-    JOIN users u ON u.id = l.user_id
-    ORDER BY l.created_at DESC`
-    );
-    res.status(200).json({ uploads: result.rows });
+    const result = await pool.query(`
+      WITH uploads AS (
+        SELECT ul.id, ul.filename, ul.created_at AS upload_date, u.name AS user_name,
+               (SELECT MAX(created_at) FROM upload_logs d WHERE d.filename = ul.filename AND d.status = 'delete') AS delete_date,
+               (SELECT name FROM users du WHERE du.id = (SELECT user_id FROM upload_logs d WHERE d.filename = ul.filename AND d.status = 'delete' LIMIT 1)) AS deleted_by,
+               CASE
+                 WHEN EXISTS (
+                   SELECT 1 FROM upload_logs d WHERE d.filename = ul.filename AND d.status = 'delete'
+                 ) THEN 'deleted'
+                 ELSE 'upload'
+               END AS status
+        FROM upload_logs ul
+        JOIN users u ON ul.user_id = u.id
+        WHERE ul.status = 'upload'
+      )
+      SELECT * FROM uploads
+      ORDER BY upload_date DESC;
+    `);
+    res.json({ uploads: result.rows });
   } catch (err) {
-    console.error('❌ Lỗi lấy log upload/delete:', err);
-    res.status(500).json({ error: 'Không lấy được lịch sử' });
+    console.error('❌ Lỗi khi lấy log admin:', err);
+    res.status(500).json({ message: 'Lỗi khi lấy log admin' });
   }
 };
 
-// ✅ Xoá file và ghi log delete
+// ✅ Xoá file + ghi log
 const deleteFiles = async (req, res) => {
   const { ids, user_id } = req.body;
-
   if (!Array.isArray(ids) || ids.length === 0 || !user_id) {
-    return res.status(400).json({ error: 'Thiếu danh sách ID hoặc user_id' });
+    return res.status(400).json({ error: 'Thiếu dữ liệu' });
   }
-
   try {
     const { rows } = await pool.query(
       'SELECT id, file_path, title FROM forms WHERE id = ANY($1)',
       [ids]
     );
-
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
-
       for (const file of rows) {
         const fullPath = path.join(__dirname, '..', 'uploads', file.file_path);
-
-        // 🔥 Xóa file vật lý nếu tồn tại
-        if (fs.existsSync(fullPath)) {
-          fs.unlinkSync(fullPath);
-        }
-
-        // 🔥 Xóa khỏi bảng forms
+        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
         await client.query('DELETE FROM forms WHERE id = $1', [file.id]);
-
-        // 🔥 Ghi log trạng thái delete
         await client.query(
           'INSERT INTO upload_logs (filename, status, user_id) VALUES ($1, $2, $3)',
-          [file.title || file.file_path, 'delete', user_id]
+          [file.title, 'delete', user_id]
         );
       }
-
       await client.query('COMMIT');
-      res.json({ message: 'Xóa thành công' });
-    } catch (e) {
+      res.json({ message: 'Đã xoá và ghi log' });
+    } catch (err) {
       await client.query('ROLLBACK');
-      console.error('❌ Lỗi trong transaction:', e.message);
-      res.status(500).json({ error: 'Xoá thất bại trong quá trình xử lý' });
+      console.error('❌ Rollback do lỗi:', err);
+      res.status(500).json({ error: 'Xoá thất bại' });
     } finally {
       client.release();
     }
   } catch (err) {
-    console.error('❌ Lỗi khi xóa:', err.message);
+    console.error('❌ Lỗi xoá file:', err);
     res.status(500).json({ error: 'Lỗi server' });
   }
 };
@@ -143,7 +133,7 @@ const getDownloadHistory = async (req, res) => {
 
 module.exports = {
   logUploadOrDelete,
-  getUploadLogs,
+  getAdminHistoryLogs,
   deleteFiles,
   logDownload,
   getDownloadHistory

@@ -5,7 +5,6 @@ const SEARCH_API = process.env.SEARCH_API || 'http://ai_service:8000/search';
 
 const searchForms = async (req, res) => {
   try {
-    // ✅ Hỗ trợ cả `q` và `query` để không bị lỗi với frontend hiện tại
     const query = req.query.q || req.query.query;
 
     if (!query) {

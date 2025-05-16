@@ -6,7 +6,7 @@ const path = require('path');
 // Controllers
 const {
     logUploadOrDelete,
-    getUploadLogs,
+    getAdminHistoryLogs,
     deleteFiles,
     logDownload,
     getDownloadHistory
@@ -17,7 +17,7 @@ const {
 
   // === HISTORY ===
 router.post('/uploads', logUploadOrDelete);
-router.get('/uploads', getUploadLogs);
+router.get('/admin-logs', getAdminHistoryLogs);
 router.post('/uploads/delete', deleteFiles);
 
 router.post('/downloads', logDownload);

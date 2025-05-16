@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logActivity } from '../components/Logic/activityLogger';
 import MainLayout from '../components/Layout/MainLayout';
 import PageContainer from '../components/Layout/PageContainer';
 
@@ -65,11 +64,6 @@ export default function SearchForms() {
         setForms(data.results || []);
         setTotalPages(1);
         setIsSearching(true);
-
-        const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
-        if (userId) {
-            logActivity(userId, 'search', `Tìm kiếm với từ khóa: ${searchQuery}`);
-        }
         
       })
       .catch(err => console.error("Lỗi tìm kiếm:", err))
