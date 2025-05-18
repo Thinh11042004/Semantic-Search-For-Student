@@ -3,21 +3,56 @@ import MainLayout from '../components/Layout/MainLayout';
 import PageContainer from '../components/Layout/PageContainer';
 
 const Product: React.FC = () => {
-  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);           // Danh sách file người dùng đã chọn
+  const [uploadProgress, setUploadProgress] = React.useState(0);                  // Giá trị phần trăm tiến trình upload
+  const [uploading, setUploading] = React.useState(false);                        // Trạng thái đang upload hay không
+  const fileInputRef = React.useRef<HTMLInputElement>(null);                      // Tham chiếu đến input file
+  const intervalRef = React.useRef<NodeJS.Timeout | null>(null);                  // Tham chiếu đến interval giả lập tiến trình
 
+  // Hiệu ứng giả lập tiến trình khi upload
+  React.useEffect(() => {
+    if (uploading && uploadProgress < 100) {
+      intervalRef.current = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev < 95) return prev + 1;
+          return prev;
+        });
+      }, 150);
+    } else {
+      clearInterval(intervalRef.current!);
+    }
+
+    return () => clearInterval(intervalRef.current!);
+  }, [uploading]);
+
+  // Khi người dùng chọn file từ input
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const filesArray = Array.from(event.target.files);
-      setSelectedFiles(prev => [...prev, ...filesArray]);
+      setSelectedFiles(prev => {
+        const combined = [...prev, ...filesArray];
+        if (combined.length > 10) {
+          alert("⚠️ Chỉ cho phép chọn tối đa 10 file");
+          return prev;
+        }
+        return combined;
+      });
     }
   };
 
+  // Khi người dùng thả file vào khung
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     if (event.dataTransfer.files) {
       const filesArray = Array.from(event.dataTransfer.files);
-      setSelectedFiles(prev => [...prev, ...filesArray]);
+      setSelectedFiles(prev => {
+        const combined = [...prev, ...filesArray];
+        if (combined.length > 10) {
+          alert("⚠️ Chỉ cho phép chọn tối đa 10 file");
+          return prev;
+        }
+        return combined;
+      });
     }
   };
 
@@ -25,50 +60,87 @@ const Product: React.FC = () => {
     event.preventDefault();
   };
 
+  // Xoá một file khỏi danh sách đã chọn
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Hàm xử lý khi nhấn nút "Upload tất cả"
   const handleUploadAll = async () => {
     if (selectedFiles.length === 0) {
       alert("Vui lòng chọn ít nhất một file");
       return;
     }
 
+    if (selectedFiles.length > 10) {
+      alert("⚠️ Chỉ cho phép upload tối đa 10 file mỗi lần");
+      return;
+    }
+
     const formData = new FormData();
     selectedFiles.forEach(file => formData.append('form', file));
+    setUploading(true);
+    setUploadProgress(0);
 
     try {
-      const response = await fetch('http://localhost:5000/api/forms/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'http://localhost:5000/api/forms/upload', true);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        alert("Upload thành công!");
-        setSelectedFiles([]);
-
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-        for (const uploaded of data.forms || []) {
-          await fetch('http://localhost:5000/api/history/uploads', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              filename: uploaded.title,
-              status: 'upload',
-              user_id: user.id
-            })
-          });
+      // Theo dõi tiến trình upload (nhưng giới hạn dưới 95%)
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          if (percent < 95) setUploadProgress(percent);
         }
-      } else {
-        alert("Upload thất bại: " + (data.error || "Lỗi không xác định"));
-      }
-    } catch (error) {
-      console.error("Lỗi khi upload:", error);
-      alert("Lỗi kết nối server");
+      };
+
+      // Khi upload hoàn tất
+      xhr.onload = async () => {
+        clearInterval(intervalRef.current!);
+      
+        if (xhr.status === 201) {
+          setUploadProgress(100);
+      
+          // 🧠 Parse response từ server trả về (danh sách forms đã upload)
+          const response = JSON.parse(xhr.responseText);
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+          // 🧾 Ghi log vào bảng upload_logs
+          for (const file of response.forms || []) {
+            await fetch('http://localhost:5000/api/history/uploads', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                filename: file.title,
+                status: 'upload',
+                user_id: user.id,
+                formId: file.id 
+              })
+            });
+          }
+      
+          // ✅ Hoàn tất sau khi ghi log
+          setTimeout(() => {
+            setUploading(false);
+            setSelectedFiles([]);
+            alert('✅ Upload thành công');
+          }, 500);
+        } else {
+          const response = JSON.parse(xhr.responseText);
+          alert('❌ Upload thất bại: ' + (response?.error || 'Không rõ nguyên nhân'));
+        }
+      };
+      
+      xhr.onerror = () => {
+        setUploading(false);
+        alert('❌ Lỗi kết nối server');
+      };
+
+      xhr.send(formData);
+    } catch (err) {
+      setUploading(false);
+      console.error('❌ Lỗi upload:', err);
+      alert('❌ Lỗi upload');
     }
   };
 
@@ -84,14 +156,15 @@ const Product: React.FC = () => {
           </div>
 
           <div
-            className="w-full max-w-2x1 min-h-[12rem] max-h-[30rem]
-              bg-[#d2d3d4] border-2 border-dashed rounded-lg 
-              p-8 text-center bg-white 
+            className="w-full max-w-2xl min-h-[12rem] max-h-[30rem]
+              bg-white border-2 border-dashed rounded-lg 
+              p-8 text-center 
               shadow-md hover:shadow-lg transition-shadow 
               flex flex-col gap-8 items-center justify-center"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
+            {/* Hiển thị danh sách file đã chọn */}
             {selectedFiles.length > 0 && (
               <div className="w-full max-h-48 overflow-y-auto flex flex-col gap-2">
                 {selectedFiles.map((file, index) => (
@@ -108,6 +181,7 @@ const Product: React.FC = () => {
               </div>
             )}
 
+            {/* Gợi ý khi chưa chọn file */}
             {selectedFiles.length === 0 && (
               <>
                 <div>
@@ -119,15 +193,35 @@ const Product: React.FC = () => {
               </>
             )}
 
+            {/* Thanh tiến trình upload */}
+            {uploading && (
+              <div className="w-full max-w-md my-4">
+                <div className="bg-gray-200 rounded-full h-4">
+                  <div
+                    className="bg-green-600 h-4 rounded-full transition-all"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-sm text-center mt-1">{uploadProgress}%</p>
+              </div>
+            )}
+
+            {/* Nút upload */}
             {selectedFiles.length > 0 && (
               <button
                 onClick={handleUploadAll}
-                className="mt-4 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                disabled={uploading}
+                className={`mt-4 px-6 py-2 rounded text-white transition ${
+                  uploading
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700'
+                }`}
               >
-                Upload tất cả
+                {uploading ? 'Đang upload...' : `Upload tất cả (${selectedFiles.length})`}
               </button>
             )}
 
+            {/* Nút chọn file */}
             <input
               type="file"
               ref={fileInputRef}

@@ -32,6 +32,7 @@ CREATE TABLE activities (
 
 CREATE TABLE upload_logs (
   id SERIAL PRIMARY KEY,
+  form_id INTEGER,
   filename TEXT,
   user_id INT REFERENCES users(id),
   status TEXT CHECK (status IN ('upload', 'delete')),

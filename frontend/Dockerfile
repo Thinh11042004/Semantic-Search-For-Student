@@ -1,5 +1,5 @@
 # Base image dùng Node 18 LTS
-FROM node:18
+FROM node:18-slim
 
 # Đặt thư mục làm việc trong container
 WORKDIR /app
