@@ -9,7 +9,6 @@ import Register from './pages/Register';               // Trang đăng ký tài 
 import AdminRequired from './pages/AdminRequired';// Trang thông báo khi không có quyền admin
 import UserProfile from './pages/UserProfile';    // Hồ sơ người dùng
 import AdminHistory from './pages/AdminHistory';  // Nhật ký admin xem lịch sử upload
-import UserHistory from './pages/UserHistory';    // Nhật ký người dùng tải file
 import OpenFile from './pages/OpenFile';               // Trang xem chi tiết file
 import ForgotPassword from './pages/ForgotPassword';
 
@@ -98,14 +97,6 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <UserProfile /> {/* Trang hồ sơ cá nhân */}
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/user-history"
-              element={
-                <ProtectedRoute>
-                  <UserHistory /> {/* Nhật ký download cá nhân */}
                 </ProtectedRoute>
               }
             />

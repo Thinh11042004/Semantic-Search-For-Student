@@ -25,21 +25,32 @@ const NavLinks: React.FC<Props> = ({ isMobile = false, onNavigate }) => {
 
   return (
     <>
-      <Link to="/search-forms" className={linkClass('/search-forms')} onClick={onNavigate}>Search</Link>
+      <Link to="/search-forms" className={linkClass('/search-forms')} onClick={onNavigate}>
+        Search
+      </Link>
 
       {isAuthenticated ? (
         <>
-          <Link
-            to={user?.role === 'admin' ? '/admin-history' : '/user-history'}
-            className={linkClass(user?.role === 'admin' ? '/admin-history' : '/user-history')}
-            onClick={onNavigate}
-          >
-            History
-          </Link>
-          <Link to="/user-profile" className={linkClass('/user-profile')} onClick={onNavigate}>Profile</Link>
           {user?.role === 'admin' && (
-            <Link to="/product" className={linkClass('/product')} onClick={onNavigate}>Product</Link>
+            <Link
+              to="/admin-history"
+              className={linkClass('/admin-history')}
+              onClick={onNavigate}
+            >
+              History
+            </Link>
           )}
+
+          <Link to="/user-profile" className={linkClass('/user-profile')} onClick={onNavigate}>
+            Profile
+          </Link>
+
+          {user?.role === 'admin' && (
+            <Link to="/product" className={linkClass('/product')} onClick={onNavigate}>
+              Product
+            </Link>
+          )}
+
           <button
             onClick={handleLogout}
             className="w-full text-left py-2 px-4 text-white bg-blue-500 my-2 rounded-lg hover:bg-blue-400 transition-all duration-300"
@@ -49,8 +60,12 @@ const NavLinks: React.FC<Props> = ({ isMobile = false, onNavigate }) => {
         </>
       ) : (
         <>
-          <Link to="/login" className={linkClass('/login')} onClick={onNavigate}>Login</Link>
-          <Link to="/register" className={linkClass('/register')} onClick={onNavigate}>Register</Link>
+          <Link to="/login" className={linkClass('/login')} onClick={onNavigate}>
+            Login
+          </Link>
+          <Link to="/register" className={linkClass('/register')} onClick={onNavigate}>
+            Register
+          </Link>
         </>
       )}
     </>
