@@ -84,7 +84,6 @@ const getFormById = async (req, res) => {
     const file = result.rows[0];  // Lấy thông tin file từ cơ sở dữ liệu
 
     // Tạo đường dẫn đầy đủ đến file
-    const host = req.protocol + '://' + req.get('host'); // http://localhost:5000
     const filePath = `${req.protocol}://${req.get('host')}/uploads/${file.file_path}`;
 
 

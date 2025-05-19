@@ -11,13 +11,6 @@ const {
 } = require('../controllers/getFormController');
 const { uploadForm } = require('../controllers/uploadController');
 const { searchForms } = require('../controllers/searchFormController');
-const {
-  // logUploadOrDelete,
-  // getUploadLogs,
-  // deleteFiles,
-  logDownload,
-  getDownloadHistory
-} = require('../controllers/historyController');
 
 
 // Multer config

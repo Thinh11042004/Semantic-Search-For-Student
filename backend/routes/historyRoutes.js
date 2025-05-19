@@ -7,9 +7,7 @@ const path = require('path');
 const {
     logUploadOrDelete,
     getAdminHistoryLogs,
-    deleteFiles,
-    logDownload,
-    getDownloadHistory
+    deleteFiles
   } = require('../controllers/historyController');
 
   // === HISTORY ===
@@ -17,8 +15,7 @@ router.post('/uploads', logUploadOrDelete);
 router.get('/admin-logs', getAdminHistoryLogs);
 router.post('/delete', deleteFiles);
 
-router.post('/downloads', logDownload);
-router.post('/downloads/user', getDownloadHistory);
+
 
 
 module.exports = router;

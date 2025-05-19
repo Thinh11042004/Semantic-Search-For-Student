@@ -3,38 +3,47 @@ require('dotenv').config();
 
 const SEARCH_API = process.env.SEARCH_API || 'http://ai_service:8000/search';
 
+
+// ✅ Tìm kiếm biểu mẫu thông qua AI Service (semantic search)
 const searchForms = async (req, res) => {
   try {
-    const query = req.query.q || req.query.query;
+    // ✅ Hỗ trợ cả query hoặc q (dự phòng nếu frontend gửi khác tên)
+    const query = req.query.query || req.query.q;
+    const top_k = req.query.top_k || 5;
 
-    if (!query) {
-      return res.status(400).json({ error: 'Thiếu truy vấn tìm kiếm.' });
+    if (!query || query.trim() === "") {
+      return res.status(400).json({ message: "Thiếu từ khóa tìm kiếm." });
     }
 
+    // ✅ Gọi đến AI Service để lấy kết quả tìm kiếm ngữ nghĩa
     const response = await axios.get(SEARCH_API, {
-      params: {
-        query: query,
-        top_k: 5
-      }
+      params: { query, top_k },
     });
 
     const data = response.data;
 
-    // ✅ Định dạng đúng để trả về cho frontend
+    // ✅ Nếu AI service trả về không đúng cấu trúc → fallback tránh lỗi
+    const topMatches = Array.isArray(data.results || data.top_matches)
+      ? (data.results || data.top_matches)
+      : [];
+
+    // ✅ Trả kết quả chuẩn hóa về frontend
     return res.status(200).json({
       query,
-      totalMatches: data.top_matches.length,
-      results: data.top_matches.map(item => ({
+      totalMatches: topMatches.length,
+      results: topMatches.map((item) => ({
+        id: item.id, 
         title: item.title,
-        file_path: '',
-        created_at: new Date()
-      }))
+        file_path: "",
+        created_at: new Date(),
+      })),
     });
-
   } catch (err) {
-    console.error('❌ Search error:', err.message);
-    res.status(500).json({ error: 'Lỗi khi tìm kiếm.', detail: err.message });
+    console.error("❌ Lỗi khi gọi AI service /search:", err.message);
+    return res.status(500).json({ message: "Lỗi khi tìm kiếm biểu mẫu." });
   }
 };
 
+// ✅ Export để sử dụng trong routes hoặc index
 module.exports = { searchForms };
+

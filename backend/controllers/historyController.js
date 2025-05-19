@@ -140,58 +140,8 @@ const deleteFiles = async (req, res) => {
 };
 
 
-
-// Ghi log khi người dùng tải file
-const logDownload = async (req, res) => {
-  const { filename, user_id } = req.body;
-
-  if (!filename || !user_id) {
-    return res.status(400).json({ error: 'Thiếu filename hoặc user_id' });
-  }
-
-  try {
-    await pool.query(
-      'INSERT INTO download_logs (filename, user_id) VALUES ($1, $2)',
-      [filename, user_id]
-    );
-    res.status(201).json({ message: 'Đã ghi log tải xuống' });
-  } catch (err) {
-    console.error('Lỗi ghi log tải xuống:', err);
-    res.status(500).json({ error: 'Lỗi máy chủ khi ghi log download' });
-  }
-};
-
-// ✅ Lấy danh sách file người dùng đã tải
-const getDownloadHistory = async (req, res) => {
-  const { user_id } = req.body;
-
-  console.log('✅ Nhận user_id:', user_id);
-
-  if (!user_id) {
-    return res.status(400).json({ message: 'Thiếu user_id' });
-  }
-
-  try {
-    const result = await pool.query(
-      `SELECT id, filename, downloaded_at AS date
-       FROM download_logs
-       WHERE user_id = $1
-       ORDER BY downloaded_at DESC`,
-      [user_id]
-    );
-
-    res.json({ downloads: result.rows });
-  } catch (err) {
-    console.error('❌ Lỗi khi lấy lịch sử tải:', err);
-    res.status(500).json({ message: 'Lỗi máy chủ' });
-  }
-};
-
-
 module.exports = {
   logUploadOrDelete,
   getAdminHistoryLogs,
   deleteFiles,
-  logDownload,
-  getDownloadHistory
 };
