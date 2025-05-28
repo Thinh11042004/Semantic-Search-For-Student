@@ -4625,3 +4625,5 @@ LINE 3:             FROM froms
 2025-05-28 03:57:14,345 - INFO -      3. hutechdodangkynhandiemi.pdf... - 0.9229 - 📚 Nội dung chứa nhiều từ khóa quan trọng
 2025-05-28 05:29:11,927 - INFO - Use pytorch device_name: cpu
 2025-05-28 05:29:11,928 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-05-28 05:29:43,531 - INFO - Use pytorch device_name: cpu
+2025-05-28 05:29:43,531 - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
